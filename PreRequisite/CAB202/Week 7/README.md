@@ -16,7 +16,7 @@
 #### Using macros 
 <img width="860" alt="Screen Shot 2022-02-02 at 1 15 18 pm" src="https://user-images.githubusercontent.com/71302996/152087743-4abd02a7-62cc-41ec-a9e0-cc8e99880843.png">
 
-- Code that can be used -> macros
+- Code that can be used -> macros  
 /* 
  *  Setting data directions in a data direction register (DDR)
  */
