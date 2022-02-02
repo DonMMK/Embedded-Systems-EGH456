@@ -1,5 +1,3 @@
-# CAB202 
-
 ## Introduction to Microcontrollers
 
 #### Breadboards
