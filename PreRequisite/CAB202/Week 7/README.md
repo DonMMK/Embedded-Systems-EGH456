@@ -38,3 +38,11 @@
 
 #### Digital I/O: Turn on/off LEDs using switches
 - Look at the specifications/schematics and do the task.
+- Uno borad has two GNDs see which one goes where. 
+- VCC on the schematics is the 5V on uno board
+
+
+#### Digital Input: Read switches
+
+
+#### Additional notes
