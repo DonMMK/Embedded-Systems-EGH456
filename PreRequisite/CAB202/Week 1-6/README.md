@@ -27,6 +27,3 @@
 #### Heading.
 - Notes
 
-
-#### Heading
-- Notes
