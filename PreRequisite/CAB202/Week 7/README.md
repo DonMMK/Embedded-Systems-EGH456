@@ -45,4 +45,5 @@
 #### Digital Input: Read switches
 
 
-#### Additional notes
+### Additional notes - Lecture 07
+####
