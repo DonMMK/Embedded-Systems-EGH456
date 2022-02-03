@@ -27,3 +27,7 @@
 #### Heading.
 - Notes
 
+
+##### bash commands
+function compile () { gcc $1.c -o $1 -Wall -Werror -std=gnu99; }
+compile X where is the the name of you script/file
