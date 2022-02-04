@@ -24,13 +24,17 @@
 
 
 ## Binary Representation of data and bitwise operations.
-#### Decimal Represenation
+#### Decimal Represenation (Theory)
+- Digits 0 to 9 to make numbers <- base 10
+- 
+
+#### Binary Represenation (Theory)
 - Notes
 
-#### Bitwise operations
+#### Bitwise operations (Practical)
 - Notes
 
-#### Bit masks
+#### Bit masks (Practical)
 - Notes
 
 
