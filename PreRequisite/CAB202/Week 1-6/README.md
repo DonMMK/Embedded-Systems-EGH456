@@ -24,7 +24,13 @@
 
 
 ## Binary Representation of data and bitwise operations.
-#### Heading.
+#### Decimal Represenation
+- Notes
+
+#### Bitwise operations
+- Notes
+
+#### Bit masks
 - Notes
 
 
