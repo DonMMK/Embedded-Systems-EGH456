@@ -25,8 +25,9 @@
 
 ## Binary Representation of data and bitwise operations.
 #### Decimal Represenation (Theory)
-- Digits 0 to 9 to make numbers <- base 10
-- 
+- Digits 0 to 9 to make numbers <- base 10  
+- Concept of Addtion, then Add with Carry. -> gives the idea of overflow when the carry is not represented  
+- When subtr    
 
 #### Binary Represenation (Theory)
 - Notes
