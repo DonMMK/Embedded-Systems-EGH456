@@ -1,30 +1,30 @@
 ## First C programs; Variables, expressions, and data types; Standard input/output.
 
-#### Heading.
+### Heading.
 - Notes
 
 ## Numeric types and making decisions.
-#### Heading.
+### Heading.
 - Notes
 
 
 ## Loops; Redirecting standard input and output.
-#### Heading.
+### Heading.
 - Notes
 
 
 ## Arrays, introducing strings.
-#### Heading.
+### Heading.
 - Notes
 
 
 ## Scope and visibility; Functions.
-#### Heading.
+### Heading.
 - Notes
 
 
 ## Binary Representation of data and bitwise operations.
-#### Decimal Represenation (Theory)
+### Decimal Represenation (Theory)
 - Digits 0 to 9 to make numbers <- base 10  
 - Concept of Addtion, then Add with Carry. -> gives the idea of overflow when the carry is not represented  
 - When subtracting we use something called 10s compliment: a vs ā. 
@@ -34,7 +34,7 @@ This is so we can use very simple hardware to perform both addition and substrac
 - This is called left shift: Multiplied by the base of number system      
 - Division of by the basw of the number system will result in a right shit. 
 
-#### Binary Represenation (Theory)
+### Binary Represenation (Theory)
 - Same thing that we looked at in the previous part in the decimal system we will look at it in the binary system.
 - Starting from fixed decimal 4 digit decimal -> 8 bit binary fixed binary
 
@@ -73,15 +73,13 @@ To. do 75 - 12: get 75, the -12 then add, binary represenation you get when conv
 - Multiplication by powers of 2
 Same as powers of 10, except in binary rep.  
 
-
-
-#### Bitwise operations (Practical)
+### Bitwise operations (Practical)
 - Notes
 
-#### Bit masks (Practical)
+### Bit masks (Practical)
 - Notes
 
 
-##### bash commands
+#### bash commands
 function compile () { gcc $1.c -o $1 -Wall -Werror -std=gnu99; }
 compile X where is the the name of you script/file
