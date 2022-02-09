@@ -36,7 +36,38 @@ This is so we can use very simple hardware to perform both addition and substrac
 
 #### Binary Represenation (Theory)
 - Same thing that we looked at in the previous part in the decimal system we will look at it in the binary system.
-- 
+- Starting from fixed decimal 4 digit decimal -> 8 bit binary fixed binary
+
+In decimal, 0 to 9999
+In decimal, numbers are 0, 1,....9
+
+In binary,  0 to 1111 1111 (255)
+In binary,  numbers are 0,1
+
+Converting between binary and decimal number system. 
+
+Binary digIT = BIT
+0 = 0000 0000
+1 = 0000 0001
+2 = 0000 0010
+3 = 0000 0011
+4 = 0000 0100
+
+When the binary numbers go 1 -> 10 -> 100 the decimal goes from 1,2,4
+
+- Represent negative nmber 
+Decimal number: 10s compliment: 9s compliment + 1
+Bunary number : 2s compliment : 1s compliment + 1
+
+for 75 decimal = 64 + 11 
+               = 64 + 8 + 2 + 1
+               = 0 1 0 0 1 0 1 1
+ 
+ for -12       
+ start with 12 = 0000 1100
+ 1s compliment = 1111 0011
+plus 1         = 1111 0100 
+               = -12
 
 #### Bitwise operations (Practical)
 - Notes
