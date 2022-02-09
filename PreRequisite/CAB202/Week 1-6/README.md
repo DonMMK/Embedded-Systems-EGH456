@@ -55,9 +55,9 @@ Binary digIT = BIT
 
 When the binary numbers go 1 -> 10 -> 100 the decimal goes from 1,2,4  
 
-- Represent negative nmber 
+- Represent negative nmber  
 Decimal number: 10s compliment: 9s compliment + 1  
-Bunary number : 2s compliment : 1s compliment + 1  
+Binary number : 2s compliment : 1s compliment + 1  
 
 for 75 decimal = 64 + 11  
                = 64 + 8 + 2 + 1  
@@ -68,6 +68,12 @@ for 75 decimal = 64 + 11
  1s compliment = 1111 0011  
 plus 1         = 1111 0100  
                = -12  
+To. do 75 - 12: get 75, the -12 then add, binary represenation you get when converted becomes 63  
+
+- Multiplication by powers of 2
+Same as powers of 10, except in binary rep.  
+
+
 
 #### Bitwise operations (Practical)
 - Notes
