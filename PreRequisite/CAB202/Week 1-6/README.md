@@ -90,12 +90,26 @@ In general: x << y == x * 2^y (2 to the power of y).
 - Right shift operator is the number getting divided by 2 in binary. This is denoted by ((7 << 3) /2) also given by (7 <<3) >> 1.
 In general: x >> y == x / 2^y (2 to the power of y).
 
-- Bitwise AND vs logical AND. 
+- Bitwise AND (&) vs logical AND (&&). 
+Bitwise AND (&) is the bitwise operation that returns 1 if both operands are 1, otherwise it returns 0.  
+Whereas logical AND (&&) is the logical operation, anything non zero is considered to be "true". you get the result of "0b 0000 0001"
 
+- Bitwise OR (|) vs logical OR (||).
+Bitwise OR (|) is the bitwise operation that returns 1 if either operand is 1, otherwise it returns 0.  
+Logical OR, give a result of "0b 0000 0001"  
 
-- Bitwise OR
+- Example: to show the clear difference between logical and bitwise
 
+- XOR ( ^ ).  
+0 ^ 0 -> 0  
+0 ^ 1 -> 1  
+1 ^ 0 -> 1  
+1 ^ 1 -> 0  
+Only bitwise exists.  
 
+- Understand the different "gates" so they can be manipulated in circuit boards.  
+
+- 
 ### Bit masks (Practical)
 - Notes
 
