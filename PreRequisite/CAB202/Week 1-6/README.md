@@ -108,8 +108,10 @@ Logical OR, give a result of "0b 0000 0001"
 Only bitwise exists.  
 
 - Understand the different "gates" so they can be manipulated in circuit boards.  
-
 - 
+<img width="536" alt="Screen Shot 2022-02-10 at 10 58 56 pm" src="https://user-images.githubusercontent.com/71302996/153413174-b964f779-848c-473c-9fa4-e365d36a840e.png">
+
+
 ### Bit masks (Practical)
 - Notes
 
