@@ -117,7 +117,7 @@ Gives the opposite of the bit.
 - Combining compliment with XOR finds that the bits remain the same.
 
 ### Bit masks (Practical)
-- Notes
+- Set, Clear, Toggle, Test individual bits within a byte.
 
 
 #### bash commands
