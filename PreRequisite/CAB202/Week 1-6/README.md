@@ -1,5 +1,4 @@
 ## First C programs; Variables, expressions, and data types; Standard input/output.
-
 ### Heading.
 - Notes
 
@@ -72,14 +71,35 @@ To. do 75 - 12: get 75, the -12 then add, binary represenation you get when conv
 
 - Multiplication by powers of 2
 Same as powers of 10, except in binary rep.  
+Example:  
+7 x 2^0 = 0111 x 1 = 0111    
+7 x 2^1 = 0111 x 2 = 1110  
+7 x 2^2 = 0111 x 2 x 2 = 11100  
+We fimd the concept of left shfit. Move and put a zero there  
 
 ### Bitwise operations (Practical)
-- Notes
+- gcc ,Bit Shift, AND, OR, XOR, Compliment
+- The printbit.c code is a good example of bitwise operations. 
+- The binary form of the number will appear from the program.
+- A generic property of the negative number in decimal + the base adds up to 255 ?
+- Left shift operator is the number getting multiplied by 2 in binary. This is denoted by  
+left shift 0: <<0,  
+left shift 1: <<1,  
+In general: x << y == x * 2^y (2 to the power of y).
+
+- Right shift operator is the number getting divided by 2 in binary. This is denoted by ((7 << 3) /2) also given by (7 <<3) >> 1.
+In general: x >> y == x / 2^y (2 to the power of y).
+
+- Bitwise AND vs logical AND. 
+
+
+- Bitwise OR
+
 
 ### Bit masks (Practical)
 - Notes
 
 
 #### bash commands
-function compile () { gcc $1.c -o $1 -Wall -Werror -std=gnu99; }
+function compile () { gcc $1.c -o $1 -Wall -Werror -std=gnu99; }  
 compile X where is the the name of you script/file
