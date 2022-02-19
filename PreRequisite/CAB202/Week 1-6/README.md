@@ -118,7 +118,7 @@ Gives the opposite of the bit.
 
 ### Bit masks (Practical)
 - Set, Clear, Toggle, Test individual bits within a byte.
-
+- Refer the code in the BitMasks.c file for more example on this.  
 
 #### bash commands
 function compile () { gcc $1.c -o $1 -Wall -Werror -std=gnu99; }  
