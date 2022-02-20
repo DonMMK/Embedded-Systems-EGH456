@@ -1,6 +1,7 @@
 ## Introduction to Microcontrollers
 
 ### Getting started
+- Understanding the architecture of a microcontroller -> Atmega328P
 - Adding preprocessor -> header files -> <avr/io.h>. Similar to standard in/out and standard library 
 - Defining macros with the library to make things easier. Ex: macro -> 
 
