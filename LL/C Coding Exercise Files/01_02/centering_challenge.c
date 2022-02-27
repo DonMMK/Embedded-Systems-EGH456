@@ -2,6 +2,7 @@
 
 void center_text(int width, char *text)
 {
+	
 }
 
 int main()
