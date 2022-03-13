@@ -34,23 +34,33 @@ int main(void)
     // Short delay to allow peripheral to enable
     for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++) { }
 
-    // Enable GPIO pin for LED D2 (PN0)
-    GPIO_PORTN_DIR_R = 0x01;
+    // Set LED D2 as output (PN0)
+    GPIO_PORTN_DIR_R = 0x01 | 0x02;
 
-    // Set the direction as output, and enable the GPIO pin for digital function.
-    GPIO_PORTN_DEN_R = 0x01;
+    // Enable the GPIO pin for digital function. // If it's output you write on the data register. if it's input you read the data register
+    GPIO_PORTN_DEN_R = 0x01 | 0x02;
+
+    // Set LED D1 as output (PN0)
+    //GPIO_PORTN_DIR_R = 0x02;
+
+    // Enable the GPIO pin for digital function.
+    //GPIO_PORTN_DEN_R = 0x02;
 
     // Loop forever.
     while(1)
     {
 
-        // Turn on the LED.
+        // Turn on the LED D2.
         GPIO_PORTN_DATA_R |= 0x01;
+        // Turn off the LED D1
+        GPIO_PORTN_DATA_R &= ~(0x02);
 
         // Delay for a bit.
         for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++) { }
 
-        // Turn off the LED.
+        // Turn on the LED D1.
+        GPIO_PORTN_DATA_R |= 0x02;
+        // Turn off the LED D2.
         GPIO_PORTN_DATA_R &= ~(0x01);
 
         // Delay for a bit.
