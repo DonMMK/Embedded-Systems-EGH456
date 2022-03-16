@@ -29,22 +29,27 @@ int main(void)
     volatile uint32_t ui32Loop;
 
     // Enable the GPIO port that is used for the on-board LED.
-    SYSCTL_RCGCGPIO_R = SYSCTL_RCGCGPIO_R12;
+    SYSCTL_RCGCGPIO_R = SYSCTL_RCGCGPIO_R12 | SYSCTL_RCGCGPIO_R5;
 
     // Short delay to allow peripheral to enable
     for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++) { }
 
-    // Set LED D2 as output (PN0)
+    // Set LED D2 and D1 as output (PN0)
     GPIO_PORTN_DIR_R = 0x01 | 0x02;
+
+    // The LEDs for D3 and D4 are connected to PF4 and PF0 set as output
+    GPIO_PORTF_AHB_DIR_R = 0x01 | 0x02;
 
     // Enable the GPIO pin for digital function. // If it's output you write on the data register. if it's input you read the data register
     GPIO_PORTN_DEN_R = 0x01 | 0x02;
 
-    // Set LED D1 as output (PN0)
-    //GPIO_PORTN_DIR_R = 0x02;
-
     // Enable the GPIO pin for digital function.
-    //GPIO_PORTN_DEN_R = 0x02;
+    GPIO_PORTF_AHB_DEN_R = 0x01 | 0x02;
+
+    // For switch zero means on <-Task E
+
+
+
 
     // Loop forever.
     while(1)
@@ -54,6 +59,14 @@ int main(void)
         GPIO_PORTN_DATA_R |= 0x01;
         // Turn off the LED D1
         GPIO_PORTN_DATA_R &= ~(0x02);
+        // Turn off the LED D3.
+        GPIO_PORTF_AHB_DATA_R &= ~(0x02);
+        // Turn on the LED D4
+        GPIO_PORTF_AHB_DATA_R |= 0x01;
+
+
+
+
 
         // Delay for a bit.
         for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++) { }
@@ -62,6 +75,11 @@ int main(void)
         GPIO_PORTN_DATA_R |= 0x02;
         // Turn off the LED D2.
         GPIO_PORTN_DATA_R &= ~(0x01);
+        // Turn on the LED D3.
+        GPIO_PORTF_AHB_DATA_R |= 0x02;
+        // Turn off the LED D4
+        GPIO_PORTF_AHB_DATA_R &= ~(0x01);
+
 
         // Delay for a bit.
         for(ui32Loop = 0; ui32Loop < 200000; ui32Loop++) { }

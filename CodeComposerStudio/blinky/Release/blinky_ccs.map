@@ -1,17 +1,17 @@
 ******************************************************************************
                   TI ARM Linker Unix v20.2.5                   
 ******************************************************************************
->> Linked Sun Mar 13 17:21:29 2022
+>> Linked Wed Mar 16 16:40:56 2022
 
 OUTPUT FILE NAME:   <blinky.out>
-ENTRY POINT SYMBOL: "_c_int00_noinit_noargs"  address: 00000279
+ENTRY POINT SYMBOL: "_c_int00_noinit_noargs"  address: 000002a1
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00100000  000002b8  000ffd48  R  X
+  FLASH                 00000000   00100000  000002e0  000ffd20  R  X
   SRAM                  20000000   00040000  00000200  0003fe00  RW X
 
 
@@ -19,9 +19,9 @@ SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    000002b8   000002b8    r-x
+00000000    00000000    000002e0   000002e0    r-x
   00000000    00000000    00000200   00000200    r-- .intvecs
-  00000200    00000200    000000b8   000000b8    r-x .text
+  00000200    00000200    000000e0   000000e0    r-x .text
 20000000    20000000    00000200   00000000    rw-
   20000000    20000000    00000200   00000000    rw- .stack
 
@@ -34,15 +34,15 @@ section   page    origin      length       input sections
 .intvecs   0    00000000    00000200     
                   00000000    00000200     startup_ccs.obj (.intvecs)
 
-.text      0    00000200    000000b8     
-                  00000200    00000078     blinky.obj (.text:main)
-                  00000278    0000002c     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.text:_c_int00_noinit_noargs:_c_int00_noinit_noargs)
-                  000002a4    00000006     startup_ccs.obj (.text:ResetISR)
-                  000002aa    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
-                  000002ae    00000004                                   : exit.c.obj (.text:abort:abort)
-                  000002b2    00000002     startup_ccs.obj (.text:FaultISR)
-                  000002b4    00000002     startup_ccs.obj (.text:IntDefaultHandler)
-                  000002b6    00000002     startup_ccs.obj (.text:NmiSR)
+.text      0    00000200    000000e0     
+                  00000200    000000a0     blinky.obj (.text:main)
+                  000002a0    0000002c     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.text:_c_int00_noinit_noargs:_c_int00_noinit_noargs)
+                  000002cc    00000006     startup_ccs.obj (.text:ResetISR)
+                  000002d2    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  000002d6    00000004                                   : exit.c.obj (.text:abort:abort)
+                  000002da    00000002     startup_ccs.obj (.text:FaultISR)
+                  000002dc    00000002     startup_ccs.obj (.text:IntDefaultHandler)
+                  000002de    00000002     startup_ccs.obj (.text:NmiSR)
 
 .cinit     0    00000000    00000000     UNINITIALIZED
 
@@ -62,9 +62,9 @@ MODULE SUMMARY
        ------                ----   -------   -------
     ./
        startup_ccs.obj       12     512       0      
-       blinky.obj            120    0         0      
+       blinky.obj            160    0         0      
     +--+---------------------+------+---------+---------+
-       Total:                132    512       0      
+       Total:                172    512       0      
                                                      
     /Applications/ti/ccs1110/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/lib/rtsv7M4_T_le_v4SPD16_eabi.lib
        boot_cortex_m.c.obj   44     0         0      
@@ -75,15 +75,15 @@ MODULE SUMMARY
                                                      
        Stack:                0      0         512    
     +--+---------------------+------+---------+---------+
-       Grand Total:          184    512       512    
+       Grand Total:          224    512       512    
 
 
 GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
 
 address   name                   
 -------   ----                   
-000002af  C$$EXIT                
-000002a5  ResetISR               
+000002d7  C$$EXIT                
+000002cd  ResetISR               
 20000200  __STACK_END            
 00000200  __STACK_SIZE           
 20000200  __STACK_TOP            
@@ -97,9 +97,9 @@ UNDEFED   __mpu_init
 20000000  __stack                
 20000000  __start___llvm_prf_cnts
 20000000  __stop___llvm_prf_cnts 
-00000279  _c_int00_noinit_noargs 
-000002ab  _system_pre_init       
-000002af  abort                  
+000002a1  _c_int00_noinit_noargs 
+000002d3  _system_pre_init       
+000002d7  abort                  
 ffffffff  binit                  
 00000000  g_pfnVectors           
 00000201  main                   
@@ -113,11 +113,11 @@ address   name
 00000000  g_pfnVectors           
 00000200  __STACK_SIZE           
 00000201  main                   
-00000279  _c_int00_noinit_noargs 
-000002a5  ResetISR               
-000002ab  _system_pre_init       
-000002af  C$$EXIT                
-000002af  abort                  
+000002a1  _c_int00_noinit_noargs 
+000002cd  ResetISR               
+000002d3  _system_pre_init       
+000002d7  C$$EXIT                
+000002d7  abort                  
 20000000  __stack                
 20000000  __start___llvm_prf_cnts
 20000000  __stop___llvm_prf_cnts 
