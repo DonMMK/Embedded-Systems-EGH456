@@ -27,6 +27,9 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "inc/hw_nvic.h"
+#include "inc/hw_types.h"
+
 #include "driverlib/debug.h"
 #include "driverlib/fpu.h"
 #include "driverlib/gpio.h"
@@ -37,14 +40,27 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "driverlib/uart.h"
+#include "driverlib/flash.h"
+#include "driverlib/systick.h"
+#include "driverlib/udma.h"
+#include "driverlib/rom.h"
+
 #include "utils/uartstdio.h"
+#include "utils/ustdlib.h"
 
 #include "grlib/grlib.h"
 #include "grlib/widget.h"
 #include "grlib/canvas.h"
+#include "grlib/checkbox.h"
+#include "grlib/container.h"
+#include "grlib/pushbutton.h"
+#include "grlib/radiobutton.h"
+#include "grlib/slider.h"
 
 #include "drivers/Kentec320x240x16_ssd2119_spi.h"
 #include "drivers/touch.h"
+
+
 
 //*****************************************************************************
 //
@@ -195,6 +211,44 @@ ConfigureUART(void)
 //
 //*****************************************************************************
 
+//*****************************************************************************
+//
+// The DMA control structure table.
+//
+//*****************************************************************************
+#ifdef ewarm
+#pragma data_alignment=1024
+tDMAControlTable psDMAControlTable[64];
+#elif defined(ccs)
+#pragma DATA_ALIGN(psDMAControlTable, 1024)
+tDMAControlTable psDMAControlTable[64];
+#else
+tDMAControlTable psDMAControlTable[64] __attribute__ ((aligned(1024)));
+#endif
+//*****************************************************************************
+//
+// Forward declarations for the globals required to define the widgets at
+// compile-time.
+//
+//*****************************************************************************
+void OnPrevious(tWidget *psWidget);
+void OnNext(tWidget *psWidget);
+void OnIntroPaint(tWidget *psWidget, tContext *psContext);
+void OnPrimitivePaint(tWidget *psWidget, tContext *psContext);
+void OnCanvasPaint(tWidget *psWidget, tContext *psContext);
+void OnCheckChange(tWidget *psWidget, uint32_t bSelected);
+void OnButtonPress(tWidget *psWidget);
+void OnRadioChange(tWidget *psWidget, uint32_t bSelected);
+void OnSliderChange(tWidget *psWidget, int32_t i32Value);
+extern tCanvasWidget g_psPanels[];
+
+
+//*****************************************************************************
+//
+// END Configuring the graphics library.
+//
+//*****************************************************************************
+
 
 
 //*****************************************************************************
@@ -270,6 +324,78 @@ main(void)
     /************************************
      * Add Graphics Library Code
     ************************************/
+    tContext sContext;
+    tRectangle sRect;
+
+    //
+    // The FPU should be enabled because some compilers will use floating-
+    // point registers, even for non-floating-point code.  If the FPU is not
+    // enabled this will cause a fault.  This also ensures that floating-
+    // point operations could be added to this application and would work
+    // correctly and use the hardware floating-point unit.  Finally, lazy
+    // stacking is enabled for interrupt handlers.  This allows floating-
+    // point instructions to be used within interrupt handlers, but at the
+    // expense of extra stack usage.
+    //
+    FPUEnable();
+    FPULazyStackingEnable();
+
+    //
+    // Run from the PLL at 120 MHz.
+    //
+    g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
+            SYSCTL_OSC_MAIN |
+            SYSCTL_USE_PLL |
+            SYSCTL_CFG_VCO_480), 120000000);
+
+    //
+    // Initialize the display driver.
+    //
+    Kentec320x240x16_SSD2119Init(g_ui32SysClock);
+
+    //
+    // Initialize the graphics context.
+    //
+    GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+
+    //
+    // Fill the top 24 rows of the screen with blue to create the banner.
+    //
+    sRect.i16XMin = 0;
+    sRect.i16YMin = 0;
+    sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
+    sRect.i16YMax = 23;
+    GrContextForegroundSet(&sContext, ClrDarkBlue);
+    GrRectFill(&sContext, &sRect);
+
+    //
+    // Put a white box around the banner.
+    //
+    GrContextForegroundSet(&sContext, ClrWhite);
+    GrRectDraw(&sContext, &sRect);
+
+    //
+    // Put the application name in the middle of the banner.
+    //
+    GrContextFontSet(&sContext, &g_sFontCm20);
+    GrStringDrawCentered(&sContext, "Don Kaluarachchi n10496262", -1,
+                         GrContextDpyWidthGet(&sContext) / 2, 8, 0);
+
+    //
+    // Configure and enable uDMA
+    //
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
+    SysCtlDelay(10);
+    uDMAControlBaseSet(&psDMAControlTable[0]);
+    uDMAEnable();
+
+    //
+    // Initialize the touch screen driver and have it route its messages to the
+    // widget tree.
+    //
+    TouchScreenInit(g_ui32SysClock);
+    TouchScreenCallbackSet(WidgetPointerMessage);
+
 
 
     /************************************
@@ -282,5 +408,9 @@ main(void)
     //
     while(1)
     {
+        //
+        // Process any messages in the widget message queue.
+        //
+        WidgetMessageQueueProcess();
     }
 }
