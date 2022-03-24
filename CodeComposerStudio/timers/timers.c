@@ -259,7 +259,83 @@ main(void)
     ROM_TimerEnable(TIMER0_BASE, TIMER_A);
     ROM_TimerEnable(TIMER1_BASE, TIMER_A);
 
-    //
+    /************************************
+     * Add Graphics Library Code
+    ************************************/
+    tContext sContext;
+        tRectangle sRect;
+
+        //
+        // The FPU should be enabled because some compilers will use floating-
+        // point registers, even for non-floating-point code.  If the FPU is not
+        // enabled this will cause a fault.  This also ensures that floating-
+        // point operations could be added to this application and would work
+        // correctly and use the hardware floating-point unit.  Finally, lazy
+        // stacking is enabled for interrupt handlers.  This allows floating-
+        // point instructions to be used within interrupt handlers, but at the
+        // expense of extra stack usage.
+        //
+        FPUEnable();
+        FPULazyStackingEnable();
+
+        //
+        // Run from the PLL at 120 MHz.
+        //
+        g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
+                                                 SYSCTL_OSC_MAIN |
+                                                 SYSCTL_USE_PLL |
+                                                 SYSCTL_CFG_VCO_480), 120000000);
+
+        //
+        // Initialize the display driver.
+        //
+        Kentec320x240x16_SSD2119Init(g_ui32SysClock);
+
+        //
+        // Initialize the graphics context.
+        //
+        GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+
+        //
+        // Fill the top 24 rows of the screen with blue to create the banner.
+        //
+        sRect.i16XMin = 0;
+        sRect.i16YMin = 0;
+        sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
+        sRect.i16YMax = 23;
+        GrContextForegroundSet(&sContext, ClrDarkBlue);
+        GrRectFill(&sContext, &sRect);
+
+        //
+        // Put a white box around the banner.
+        //
+        GrContextForegroundSet(&sContext, ClrWhite);
+        GrRectDraw(&sContext, &sRect);
+
+        //
+        // Put the application name in the middle of the banner.
+        //
+        GrContextFontSet(&sContext, &g_sFontCm20);
+        GrStringDrawCentered(&sContext, "Don Kaluarachchi n10496262", -1,
+                             GrContextDpyWidthGet(&sContext) / 2, 8, 0);
+
+        //
+        // Configure and enable uDMA
+        //
+        SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
+        SysCtlDelay(10);
+        uDMAControlBaseSet(&psDMAControlTable[0]);
+        uDMAEnable();
+
+        //
+        // Initialize the touch screen driver and have it route its messages to the
+        // widget tree.
+        //
+        TouchScreenInit(g_ui32SysClock);
+        TouchScreenCallbackSet(WidgetPointerMessage);
+
+
+
     // Loop forever while the timers run.
     //
     while(1)
