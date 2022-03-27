@@ -260,6 +260,13 @@ extern tCanvasWidget g_psPanels[];
 int
 main(void)
 {
+    // Initialize a counter for timers 0 and 1
+    volatile uint32_t Counter_Timer0 = 0;
+    volatile uint32_t Counter_Timer1 = 0;
+    char Store_Count0[10];
+    char Store_Count1[10];
+    uint32_t counter = 0;
+
     //
     // Set the clocking to run directly from the crystal at 120MHz.
     //
@@ -304,8 +311,8 @@ main(void)
     //
     ROM_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
     ROM_TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
-    ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, g_ui32SysClock);
-    ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, g_ui32SysClock / 2);
+    ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, g_ui32SysClock * 5); // Once every 5 seconds
+    ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, g_ui32SysClock / 2); // Two times a second
 
     //
     // Setup the interrupts for the timer timeouts.
@@ -319,7 +326,9 @@ main(void)
     // Enable the timers.
     //
     ROM_TimerEnable(TIMER0_BASE, TIMER_A);
+    Counter_Timer0= Counter_Timer0 + 1;
     ROM_TimerEnable(TIMER1_BASE, TIMER_A);
+    Counter_Timer1= Counter_Timer1 + 1;
 
     /************************************
      * Add Graphics Library Code
@@ -378,8 +387,17 @@ main(void)
     // Put the application name in the middle of the banner.
     //
     GrContextFontSet(&sContext, &g_sFontCm20);
-    GrStringDrawCentered(&sContext, "Don Kaluarachchi n10496262", -1,
-                         GrContextDpyWidthGet(&sContext) / 2, 8, 0);
+    //GrStringDrawCentered(&sContext, "Timer0:" "Timer1:", -1,
+     //                    GrContextDpyWidthGet(&sContext) / 2, 8, 0);
+
+
+//
+    GrStringDraw(&sContext, "Timer 0:", -1, 100, 108, 0);
+    GrStringDraw(&sContext, "Timer 1:", -1, 100, 128, 0);
+    //GrStringDraw(&sContext, "Counter:", -1, 100, 170, 0);
+
+    //
+    //int sprintf(Counter_Timer0 , Counter_Timer1);
 
     //
     // Configure and enable uDMA
@@ -412,5 +430,11 @@ main(void)
         // Process any messages in the widget message queue.
         //
         WidgetMessageQueueProcess();
+        sprintf(Store_Count0, "%d", Counter_Timer0);
+        sprintf(Store_Count1, "%d", Counter_Timer1);
+        GrStringDraw(&sContext, Store_Count0, -1, 195, 108, 1);
+        GrStringDraw(&sContext, Store_Count1, -1, 195, 128, 1);
+
+
     }
 }
