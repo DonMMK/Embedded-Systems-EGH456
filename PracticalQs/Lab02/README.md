@@ -33,7 +33,7 @@ This can be context of real-time specific in that the timer can be used in both 
 Question:  
 What is a real-time clock?  
 
-Answer:  
+Answer: Is a computer clock in the form of an integrated circuit that is specifically used to keep time. It is able to function even when the computer is powered down through a battery or independantly from the system's main power.  
 
 Question:  
 What are thread and handler modes of operation?  
