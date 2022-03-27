@@ -5,7 +5,7 @@ Question:
 How will the program get out of the while(1) loop? What does it execute outside this
 loop?  
 
-Answer:  
+Answer: Exits the while loop due to the interupt. It does the code in the interupt hanlder outside the loop.  
 
 
 ### Task B
