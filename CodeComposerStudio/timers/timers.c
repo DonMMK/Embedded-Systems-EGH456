@@ -92,12 +92,6 @@ uint32_t g_ui32SysClock;
 //*****************************************************************************
 uint32_t g_ui32Flags;
 
-
-volatile uint32_t Counter_Timer0 = 0;
-volatile uint32_t Counter_Timer1 = 0;
-char Store_Count0[10];
-char Store_Count1[10];
-
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -119,7 +113,7 @@ void
 Timer0IntHandler(void)
 {
     char cOne, cTwo;
-    Counter_Timer0++;
+
     //
     // Clear the timer interrupt.
     //
@@ -154,7 +148,7 @@ void
 Timer1IntHandler(void)
 {
     char cOne, cTwo;
-    Counter_Timer1++;
+
     //
     // Clear the timer interrupt.
     //
@@ -267,7 +261,10 @@ int
 main(void)
 {
     // Initialize a counter for timers 0 and 1
-
+    volatile uint32_t Counter_Timer0 = 0;
+    volatile uint32_t Counter_Timer1 = 0;
+    char Store_Count0[10];
+    char Store_Count1[10];
     uint32_t counter = 0;
 
     //
