@@ -92,6 +92,46 @@ uint32_t g_ui32SysClock;
 //*****************************************************************************
 uint32_t g_ui32Flags;
 
+
+//*****************************************************************************
+//
+// Configuring the canvas and implementing display functions to show the timers.
+//
+//*****************************************************************************
+volatile uint32_t timer1;
+volatile uint32_t timer2;
+
+char buff[80];
+
+void draw1(tWidget *psWidget, tContext *psContext);
+void draw2(tWidget *psWidget, tContext *psContext);
+
+Canvas(canvas1, 0, 0, 0, &g_sKentec320x240x16_SSD2119, 0,
+           0, 200, 40, CANVAS_STYLE_OUTLINE | CANVAS_STYLE_APP_DRAWN, 0, 0,
+           0, 0, 0, 0, draw1);
+Canvas(canvas2, 0, 0, 0, &g_sKentec320x240x16_SSD2119, 0,
+           40, 200, 40, CANVAS_STYLE_OUTLINE | CANVAS_STYLE_APP_DRAWN, 0, 0,
+           0, 0, 0, 0, draw2);
+
+void
+draw1(tWidget *psWidget, tContext *psContext)
+{
+    int32_t numChar = sprintf(buff, "Timer1: %d", timer1);
+    GrContextFontSet(psContext, &g_sFontCm18);
+    GrContextForegroundSet(psContext, ClrSilver);
+    GrStringDraw(psContext, buff, numChar, 1, 10, 1);
+}
+
+void
+draw2(tWidget *psWidget, tContext *psContext)
+{
+    int32_t numChar = sprintf(buff, "Timer2: %i", timer2);
+    GrContextFontSet(psContext, &g_sFontCm18);
+    GrContextForegroundSet(psContext, ClrSilver);
+    GrStringDraw(psContext, buff, numChar, 1, 50, 0);
+}
+
+
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -113,7 +153,7 @@ void
 Timer0IntHandler(void)
 {
     char cOne, cTwo;
-
+    timer1++;
     //
     // Clear the timer interrupt.
     //
@@ -136,6 +176,7 @@ Timer0IntHandler(void)
     cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
     cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
     UARTprintf("\rT1: %c  T2: %c", cOne, cTwo);
+    WidgetPaint((tWidget*) &canvas1);
     ROM_IntMasterEnable();
 }
 
@@ -148,7 +189,7 @@ void
 Timer1IntHandler(void)
 {
     char cOne, cTwo;
-
+    timer2++;
     //
     // Clear the timer interrupt.
     //
@@ -171,6 +212,7 @@ Timer1IntHandler(void)
     cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
     cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
     UARTprintf("\rT1: %c  T2: %c", cOne, cTwo);
+    WidgetPaint((tWidget*) &canvas2);
     ROM_IntMasterEnable();
 }
 
@@ -260,13 +302,9 @@ extern tCanvasWidget g_psPanels[];
 int
 main(void)
 {
-    // Initialize a counter for timers 0 and 1
-    volatile uint32_t Counter_Timer0 = 0;
-    volatile uint32_t Counter_Timer1 = 0;
-    char Store_Count0[10];
-    char Store_Count1[10];
-    uint32_t counter = 0;
-
+    tContext sContext;
+    FPUEnable();
+    FPULazyStackingEnable();
     //
     // Set the clocking to run directly from the crystal at 120MHz.
     //
@@ -275,6 +313,15 @@ main(void)
                                              SYSCTL_USE_PLL |
                                              SYSCTL_CFG_VCO_480), 120000000);
 
+    //
+    // Initialize the UART and write status.
+    //
+    Kentec320x240x16_SSD2119Init(g_ui32SysClock);
+    GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+    WidgetAdd(WIDGET_ROOT, (tWidget *) &canvas1);
+    WidgetAdd(WIDGET_ROOT, (tWidget *) &canvas2);
+    WidgetPaint(WIDGET_ROOT);
+    
     //
     // Initialize the UART and write status.
     //
@@ -326,9 +373,7 @@ main(void)
     // Enable the timers.
     //
     ROM_TimerEnable(TIMER0_BASE, TIMER_A);
-    Counter_Timer0= Counter_Timer0 + 1;
     ROM_TimerEnable(TIMER1_BASE, TIMER_A);
-    Counter_Timer1= Counter_Timer1 + 1;
 
     /************************************
      * Add Graphics Library Code
@@ -346,73 +391,73 @@ main(void)
     // point instructions to be used within interrupt handlers, but at the
     // expense of extra stack usage.
     //
-    FPUEnable();
-    FPULazyStackingEnable();
-
-    //
-    // Run from the PLL at 120 MHz.
-    //
-    g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
-            SYSCTL_OSC_MAIN |
-            SYSCTL_USE_PLL |
-            SYSCTL_CFG_VCO_480), 120000000);
-
-    //
-    // Initialize the display driver.
-    //
-    Kentec320x240x16_SSD2119Init(g_ui32SysClock);
-
-    //
-    // Initialize the graphics context.
-    //
-    GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
-
-    //
-    // Fill the top 24 rows of the screen with blue to create the banner.
-    //
-    sRect.i16XMin = 0;
-    sRect.i16YMin = 0;
-    sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
-    sRect.i16YMax = 23;
-    GrContextForegroundSet(&sContext, ClrDarkBlue);
-    GrRectFill(&sContext, &sRect);
-
-    //
-    // Put a white box around the banner.
-    //
-    GrContextForegroundSet(&sContext, ClrWhite);
-    GrRectDraw(&sContext, &sRect);
-
-    //
-    // Put the application name in the middle of the banner.
-    //
-    GrContextFontSet(&sContext, &g_sFontCm20);
-    //GrStringDrawCentered(&sContext, "Timer0:" "Timer1:", -1,
-     //                    GrContextDpyWidthGet(&sContext) / 2, 8, 0);
-
-
+//    FPUEnable();
+//    FPULazyStackingEnable();
 //
-    GrStringDraw(&sContext, "Timer 0:", -1, 100, 108, 0);
-    GrStringDraw(&sContext, "Timer 1:", -1, 100, 128, 0);
-    //GrStringDraw(&sContext, "Counter:", -1, 100, 170, 0);
-
-    //
-    //int sprintf(Counter_Timer0 , Counter_Timer1);
-
-    //
-    // Configure and enable uDMA
-    //
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
-    SysCtlDelay(10);
-    uDMAControlBaseSet(&psDMAControlTable[0]);
-    uDMAEnable();
-
-    //
-    // Initialize the touch screen driver and have it route its messages to the
-    // widget tree.
-    //
-    TouchScreenInit(g_ui32SysClock);
-    TouchScreenCallbackSet(WidgetPointerMessage);
+//    //
+//    // Run from the PLL at 120 MHz.
+//    //
+//    g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
+//            SYSCTL_OSC_MAIN |
+//            SYSCTL_USE_PLL |
+//            SYSCTL_CFG_VCO_480), 120000000);
+//
+//    //
+//    // Initialize the display driver.
+//    //
+//    Kentec320x240x16_SSD2119Init(g_ui32SysClock);
+//
+//    //
+//    // Initialize the graphics context.
+//    //
+//    GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
+//
+//    //
+//    // Fill the top 24 rows of the screen with blue to create the banner.
+//    //
+//    sRect.i16XMin = 0;
+//    sRect.i16YMin = 0;
+//    sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
+//    sRect.i16YMax = 23;
+//    GrContextForegroundSet(&sContext, ClrDarkBlue);
+//    GrRectFill(&sContext, &sRect);
+//
+//    //
+//    // Put a white box around the banner.
+//    //
+//    GrContextForegroundSet(&sContext, ClrWhite);
+//    GrRectDraw(&sContext, &sRect);
+//
+//    //
+//    // Put the application name in the middle of the banner.
+//    //
+//    GrContextFontSet(&sContext, &g_sFontCm20);
+//    //GrStringDrawCentered(&sContext, "Timer0:" "Timer1:", -1,
+//     //                    GrContextDpyWidthGet(&sContext) / 2, 8, 0);
+//
+//
+////
+//    GrStringDraw(&sContext, "Timer 0:", -1, 100, 108, 0);
+//    GrStringDraw(&sContext, "Timer 1:", -1, 100, 128, 0);
+//    //GrStringDraw(&sContext, "Counter:", -1, 100, 170, 0);
+//
+//    //
+//    //int sprintf(Counter_Timer0 , Counter_Timer1);
+//
+//    //
+//    // Configure and enable uDMA
+//    //
+//    SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
+//    SysCtlDelay(10);
+//    uDMAControlBaseSet(&psDMAControlTable[0]);
+//    uDMAEnable();
+//
+//    //
+//    // Initialize the touch screen driver and have it route its messages to the
+//    // widget tree.
+//    //
+//    TouchScreenInit(g_ui32SysClock);
+//    TouchScreenCallbackSet(WidgetPointerMessage);
 
 
 
@@ -429,11 +474,11 @@ main(void)
         //
         // Process any messages in the widget message queue.
         //
-        WidgetMessageQueueProcess();
-        sprintf(Store_Count0, "%d", Counter_Timer0);
-        sprintf(Store_Count1, "%d", Counter_Timer1);
-        GrStringDraw(&sContext, Store_Count0, -1, 195, 108, 1);
-        GrStringDraw(&sContext, Store_Count1, -1, 195, 128, 1);
+//        WidgetMessageQueueProcess();
+//        sprintf(Store_Count0, "%d", Counter_Timer0);
+//        sprintf(Store_Count1, "%d", Counter_Timer1);
+//        GrStringDraw(&sContext, Store_Count0, -1, 195, 108, 1);
+//        GrStringDraw(&sContext, Store_Count1, -1, 195, 128, 1);
 
 
     }
