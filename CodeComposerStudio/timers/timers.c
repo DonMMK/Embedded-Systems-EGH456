@@ -378,8 +378,7 @@ main(void)
     /************************************
      * Add Graphics Library Code
     ************************************/
-    tContext sContext;
-    tRectangle sRect;
+
 
     //
     // The FPU should be enabled because some compilers will use floating-
@@ -474,7 +473,7 @@ main(void)
         //
         // Process any messages in the widget message queue.
         //
-//        WidgetMessageQueueProcess();
+        WidgetMessageQueueProcess();
 //        sprintf(Store_Count0, "%d", Counter_Timer0);
 //        sprintf(Store_Count1, "%d", Counter_Timer1);
 //        GrStringDraw(&sContext, Store_Count0, -1, 195, 108, 1);
