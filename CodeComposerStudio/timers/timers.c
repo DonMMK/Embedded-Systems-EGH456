@@ -4,20 +4,20 @@
 //
 // Copyright (c) 2013-2017 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
-// 
+//
 // Texas Instruments (TI) is supplying this software for use solely and
 // exclusively on TI's microcontroller products. The software is owned by
 // TI and/or its suppliers, and is protected under applicable copyright
 // laws. You may not combine this software with "viral" open-source
 // software in order to form a larger program.
-// 
+//
 // THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
 // NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
 // NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 // A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
 // CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
 // DAMAGES, FOR ANY REASON WHATSOEVER.
-// 
+//
 // This is part of revision 2.1.4.178 of the EK-TM4C1294XL Firmware Package.
 //
 //*****************************************************************************
@@ -92,6 +92,12 @@ uint32_t g_ui32SysClock;
 //*****************************************************************************
 uint32_t g_ui32Flags;
 
+
+volatile uint32_t Counter_Timer0 = 0;
+volatile uint32_t Counter_Timer1 = 0;
+char Store_Count0[10];
+char Store_Count1[10];
+
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -113,7 +119,7 @@ void
 Timer0IntHandler(void)
 {
     char cOne, cTwo;
-
+    Counter_Timer0++;
     //
     // Clear the timer interrupt.
     //
@@ -148,7 +154,7 @@ void
 Timer1IntHandler(void)
 {
     char cOne, cTwo;
-
+    Counter_Timer1++;
     //
     // Clear the timer interrupt.
     //
@@ -166,7 +172,7 @@ Timer1IntHandler(void)
 
     //
     // Update the interrupt status.
-    // 
+    //
     ROM_IntMasterDisable();
     cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
     cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
@@ -261,10 +267,7 @@ int
 main(void)
 {
     // Initialize a counter for timers 0 and 1
-    volatile uint32_t Counter_Timer0 = 0;
-    volatile uint32_t Counter_Timer1 = 0;
-    char Store_Count0[10];
-    char Store_Count1[10];
+
     uint32_t counter = 0;
 
     //
