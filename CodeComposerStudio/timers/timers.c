@@ -92,6 +92,11 @@ uint32_t g_ui32SysClock;
 //*****************************************************************************
 uint32_t g_ui32Flags;
 
+volatile uint32_t Counter_Timer0 = 0;
+volatile uint32_t Counter_Timer1 = 0;
+char Store_Count0[10];
+char Store_Count1[10];
+
 //*****************************************************************************
 //
 // The error routine that is called if the driver library encounters an error.
@@ -113,6 +118,7 @@ void
 Timer0IntHandler(void)
 {
     char cOne, cTwo;
+    Counter_Timer0++;
 
     //
     // Clear the timer interrupt.
@@ -148,6 +154,7 @@ void
 Timer1IntHandler(void)
 {
     char cOne, cTwo;
+    Counter_Timer1++;
 
     //
     // Clear the timer interrupt.
@@ -261,10 +268,7 @@ int
 main(void)
 {
     // Initialize a counter for timers 0 and 1
-    volatile uint32_t Counter_Timer0 = 0;
-    volatile uint32_t Counter_Timer1 = 0;
-    char Store_Count0[10];
-    char Store_Count1[10];
+
     uint32_t counter = 0;
 
     //
@@ -311,7 +315,7 @@ main(void)
     //
     ROM_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
     ROM_TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
-    ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, g_ui32SysClock * 5); // Once every 5 seconds
+    ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, g_ui32SysClock * 2.5); // Once every 5 seconds // * 5
     ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, g_ui32SysClock / 2); // Two times a second
 
     //
@@ -326,9 +330,7 @@ main(void)
     // Enable the timers.
     //
     ROM_TimerEnable(TIMER0_BASE, TIMER_A);
-    Counter_Timer0= Counter_Timer0 + 1;
     ROM_TimerEnable(TIMER1_BASE, TIMER_A);
-    Counter_Timer1= Counter_Timer1 + 1;
 
     /************************************
      * Add Graphics Library Code
@@ -387,8 +389,8 @@ main(void)
     // Put the application name in the middle of the banner.
     //
     GrContextFontSet(&sContext, &g_sFontCm20);
-    //GrStringDrawCentered(&sContext, "Timer0:" "Timer1:", -1,
-     //                    GrContextDpyWidthGet(&sContext) / 2, 8, 0);
+    GrStringDrawCentered(&sContext, "Lab 02 Task A", -1,
+                         GrContextDpyWidthGet(&sContext) / 2, 8, 0);
 
 
 //
