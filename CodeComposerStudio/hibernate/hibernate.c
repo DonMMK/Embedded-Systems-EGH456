@@ -26,25 +26,35 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+
 #include "inc/hw_gpio.h"
 #include "inc/hw_hibernate.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_sysctl.h"
 #include "inc/hw_types.h"
+#include "inc/hw_nvic.h"
+
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
+#include "driverlib/fpu.h"
 #include "driverlib/hibernate.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 #include "driverlib/uart.h"
+#include "driverlib/flash.h"
 #include "driverlib/systick.h"
+#include "driverlib/udma.h"
+#include "driverlib/rom.h"
+
 #include "utils/ustdlib.h"
 #include "utils/uartstdio.h"
 #include "utils/cmdline.h"
+
 #include "drivers/buttons.h"
 #include "drivers/pinout.h"
 
@@ -127,10 +137,30 @@ uint8_t g_ui8FirstLine;
 
 //*****************************************************************************
 //
+// Flags that contain the current value of the interrupt indicator as displayed
+// on the UART.
+//
+//*****************************************************************************
+uint32_t g_ui32Flags;
+
+//****************************************************************************
+//
+// System clock rate in Hz.
+//
+//****************************************************************************
+uint32_t g_ui32SysClock;
+
+//*****************************************************************************
+//
 // Flag that informs that date and time have to be set.
 //
 //*****************************************************************************
 volatile bool g_bSetDate;
+
+// Counter for How many times the button is pressed
+volatile int Button_Press_Counter;
+volatile int Time_Since_Reset;
+volatile uint32_t Counter_Timer0 = 0; // Counter to 10?
 
 //*****************************************************************************
 //
@@ -165,6 +195,47 @@ __error__(char *pcFilename, uint32_t ui32Line)
 {
 }
 #endif
+
+
+//*****************************************************************************
+//
+// The interrupt handler for the first timer interrupt.
+//
+//*****************************************************************************
+void
+Timer0IntHandler(void)
+{
+    char cOne, cTwo;
+    Counter_Timer0++;
+    //
+    // Clear the timer interrupt.
+    //
+    ROM_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+
+    //
+    // Toggle the flag for the first timer.
+    //
+    HWREGBITW(&g_ui32Flags, 0) ^= 1;
+
+    //
+    // Use the flags to Toggle the LED for this timer
+    //
+    GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_0, g_ui32Flags);
+
+    //
+    // Update the interrupt status.
+    //
+    ROM_IntMasterDisable();
+    cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
+    cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
+    UARTprintf("\rT1: %c  T2: %c", cOne, cTwo);
+    ROM_IntMasterEnable();
+
+
+    if( Counter_Timer0 >= 10){
+        g_bHibernate == true;
+    }
+}
 
 //*****************************************************************************
 //
@@ -647,6 +718,10 @@ main(void)
     //
     ui32Status = 0;
     ui32HibernateCount = 0;
+
+
+
+
 
     //
     // Check to see if Hibernation module is already active, which could mean
