@@ -1,0 +1,1 @@
+"./startup_ccs.obj" "./timers.obj" "./drivers/Kentec320x240x16_ssd2119_spi.obj" "./drivers/touch.obj" "./utils/uartstdio.obj" "../timers_ccs.cmd" -llibc.a -l"/Users/don/ti/tivaware_c_series_2_1_4_178/grlib/ccs/Debug/grlib.lib" -l"/Users/don/ti/tivaware_c_series_2_1_4_178/driverlib/ccs/Debug/driverlib.lib" 
