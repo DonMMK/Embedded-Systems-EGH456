@@ -57,6 +57,7 @@
 //
 //****************************************************************************
 uint32_t g_ui32SysClock;
+volatile int ClockCounter;
 
 //*****************************************************************************
 //
@@ -92,8 +93,17 @@ WatchdogIntHandler(void)
     // without clearing the interrupt.  This will cause the system to reset
     // next time the watchdog interrupt fires.
     //
+    ClockCounter++;
+
+    // button press
     if(!g_bFeedWatchdog)
     {
+        ClockCounter = 0;
+        return;
+    }
+
+    // reset the thing
+    if (ClockCounter >= 15){
         return;
     }
 
@@ -171,9 +181,9 @@ main(void)
     ROM_IntEnable(INT_WATCHDOG);
 
     //
-    // Set the period of the watchdog timer to 1 second.
+    // Set the period of the watchdog timer to 1 second. -> amended to 3Hz so 1/3 seconds
     //
-    ROM_WatchdogReloadSet(WATCHDOG0_BASE, g_ui32SysClock);
+    ROM_WatchdogReloadSet(WATCHDOG0_BASE, g_ui32SysClock/3);
 
     //
     // Enable reset generation from the watchdog timer.
