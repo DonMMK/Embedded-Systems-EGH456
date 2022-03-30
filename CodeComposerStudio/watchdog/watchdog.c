@@ -36,6 +36,8 @@
 #include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
 #include "drivers/buttons.h"
+#include "driverlib/timer.h"
+
 
 //*****************************************************************************
 //
@@ -57,7 +59,6 @@
 //
 //****************************************************************************
 uint32_t g_ui32SysClock;
-volatile int ClockCounter;
 
 //*****************************************************************************
 //
@@ -66,6 +67,10 @@ volatile int ClockCounter;
 //
 //*****************************************************************************
 volatile bool g_bFeedWatchdog = true;
+volatile bool g_newSystem = true;
+
+volatile uint8_t g_watchdogCount = 0;
+uint32_t MAX_COUNT;
 
 //*****************************************************************************
 //
@@ -93,17 +98,15 @@ WatchdogIntHandler(void)
     // without clearing the interrupt.  This will cause the system to reset
     // next time the watchdog interrupt fires.
     //
-    ClockCounter++;
 
-    // button press
-    if(!g_bFeedWatchdog)
+    g_watchdogCount++;
+    if(g_watchdogCount >= MAX_COUNT)
     {
-        ClockCounter = 0;
-        return;
+        g_bFeedWatchdog = false;
     }
 
-    // reset the thing
-    if (ClockCounter >= 15){
+    if(!g_bFeedWatchdog)
+    {
         return;
     }
 
@@ -116,8 +119,14 @@ WatchdogIntHandler(void)
     // Invert the GPIO PN0 value.
     //
     ROM_GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_0,
-                     (ROM_GPIOPinRead(GPIO_PORTN_BASE, GPIO_PIN_0) ^
-                                     GPIO_PIN_0));
+                        (ROM_GPIOPinRead(GPIO_PORTN_BASE, GPIO_PIN_0) ^ GPIO_PIN_0) // read pin and xor it
+                    );
+
+    if(g_newSystem)
+    {
+        g_newSystem = false;
+        ROM_GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_1, 0);
+    }
 }
 
 //*****************************************************************************
@@ -132,7 +141,8 @@ SW1ButtonPressed(void)
     // Set the flag that tells the interrupt handler not to clear the
     // watchdog interrupt.
     //
-    g_bFeedWatchdog = false;
+    g_bFeedWatchdog = true;
+    g_watchdogCount = 0;
 
     return(0);
 }
@@ -145,53 +155,50 @@ SW1ButtonPressed(void)
 int
 main(void)
 {
-    //
     // Set the clocking to run directly from the crystal at 120MHz.
-    //
     g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
                                              SYSCTL_OSC_MAIN |
                                              SYSCTL_USE_PLL |
                                              SYSCTL_CFG_VCO_480), 120000000);
-    //
+
     // Initialize the buttons driver.
-    //
     ButtonsInit();
 
-    //
     // Enable the peripherals used by this example.
-    //
     ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_WDOG0);
     ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPION);
+    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0); // timer interrupt to flip 5 second flag
 
-    //
     // Enable processor interrupts.
-    //
     ROM_IntMasterEnable();
 
+    //---------------------------------------------------------------------------------------
+    // LEDs Initialisation
     //
+
     // Set GPIO PN0 as an output.  This drives an LED on the board that will
     // toggle when a watchdog interrupt is processed.
-    //
-    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_0);
+    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_0 | GPIO_PIN_1); // turn on pin 0 and 1
     ROM_GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_0, 0);
 
+    // turn on LED 1 on system startup to signal system reset
+    ROM_GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_1, GPIO_PIN_1);
+
+    //---------------------------------------------------------------------------------------
+    // Watchdog Initialisation
     //
+
     // Enable the watchdog interrupt.
-    //
     ROM_IntEnable(INT_WATCHDOG);
-
-    //
-    // Set the period of the watchdog timer to 1 second. -> amended to 3Hz so 1/3 seconds
-    //
-    ROM_WatchdogReloadSet(WATCHDOG0_BASE, g_ui32SysClock/3);
-
-    //
+    // Set the period of the watchdog timer to 1 second. ### changed to 0.33 seconds
+    ROM_WatchdogReloadSet(WATCHDOG0_BASE, g_ui32SysClock / 3);
     // Enable reset generation from the watchdog timer.
-    //
     ROM_WatchdogResetEnable(WATCHDOG0_BASE);
 
-    //
-    // Enable the watchdog timer.
+    MAX_COUNT = 3 * 5; // 3Hz, 5 seconds = 15 watchdog events
+
+    //---------------------------------------------------------------------------------------
+    // Enable Timers
     //
     ROM_WatchdogEnable(WATCHDOG0_BASE);
 
@@ -207,9 +214,9 @@ main(void)
         if(ui8Buttons & USR_SW1)
         {
             SW1ButtonPressed();
-            while(1)
-            {
-            }
+            // while(1)
+            // {
+            // }
         }
     }
 }
