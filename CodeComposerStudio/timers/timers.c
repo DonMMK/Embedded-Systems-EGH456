@@ -315,7 +315,7 @@ main(void)
     //
     ROM_TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
     ROM_TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
-    ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, g_ui32SysClock * 2.5); // Once every 5 seconds // * 5
+    ROM_TimerLoadSet(TIMER0_BASE, TIMER_A, g_ui32SysClock * 5); // Once every 5 seconds // * 5
     ROM_TimerLoadSet(TIMER1_BASE, TIMER_A, g_ui32SysClock / 2); // Two times a second
 
     //

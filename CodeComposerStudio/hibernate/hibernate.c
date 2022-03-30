@@ -197,45 +197,7 @@ __error__(char *pcFilename, uint32_t ui32Line)
 #endif
 
 
-//*****************************************************************************
-//
-// The interrupt handler for the first timer interrupt.
-//
-//*****************************************************************************
-//void
-//Timer0IntHandler(void)
-//{
-//    char cOne, cTwo;
-//    //Counter_Timer0++;
-//    //
-//    // Clear the timer interrupt.
-//    //
-//    ROM_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-//
-//    //
-//    // Toggle the flag for the first timer.
-//    //
-//    HWREGBITW(&g_ui32Flags, 0) ^= 1;
-//
-//    //
-//    // Use the flags to Toggle the LED for this timer
-//    //
-//    GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_0, g_ui32Flags);
-//
-//    //
-//    // Update the interrupt status.
-//    //
-//    ROM_IntMasterDisable();
-//    cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
-//    cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
-//    UARTprintf("\rT1: %c  T2: %c", cOne, cTwo);
-//    ROM_IntMasterEnable();
-//
-//
-//    if( Counter_Timer0 >= 10){
-//        g_bHibernate == true;
-//    }
-//}
+
 
 //*****************************************************************************
 //
@@ -656,9 +618,11 @@ SysTickIntHandler(void)
             //
             // Set the hibernate flag to request a system hibernate cycle.
             //
-            Button_Press_Counter++;
+
+            //Button_Press_Counter = Button_Press_Counter /3 ;
             HibernateDataSet(&Button_Press_Counter , 1);
             g_bHibernate = true;
+            Button_Press_Counter++;
             break;
         }
 
@@ -721,10 +685,6 @@ main(void)
     ui32Status = 0;
     ui32HibernateCount = 0;
 
-
-
-
-
     //
     // Check to see if Hibernation module is already active, which could mean
     // that the processor is waking from a hibernation.
@@ -767,9 +727,6 @@ main(void)
             // Implement to reset or read from the counter
            Button_Press_Counter = 0;
            HibernateDataSet(&Button_Press_Counter , 1);
-
-
-
         }
         else{
             HibernateDataGet(&Button_Press_Counter , 1);
@@ -778,12 +735,17 @@ main(void)
 //        //
 //        // Wake was due to the External Wake pin.
 //        //
-//        else if(ui32Status & HIBERNATE_INT_PIN_WAKE)
+//        if(ui32Status & HIBERNATE_INT_PIN_WAKE)
 //        {
-//            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
-//                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
-//                                g_ppcWakeSource[2]);
+////            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
+////                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
+////                                g_ppcWakeSource[2]);
+//            Button_Press_Counter = 0;
+//            HibernateDataSet(&Button_Press_Counter , 1);
 //        }
+//        else{
+//                    HibernateDataGet(&Button_Press_Counter , 1);
+//                }
 //
 //        //
 //        // Wake was due to GPIO wake.
@@ -964,6 +926,7 @@ main(void)
 
 
             }
+
             UARTprintf("\nNumber of seconds %d\nNumber of presses %d \n" ,Counter_Timer0++, Button_Press_Counter);
             UARTFlushTx(false);
             //
