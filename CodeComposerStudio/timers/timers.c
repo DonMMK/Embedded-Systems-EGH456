@@ -94,8 +94,8 @@ uint32_t g_ui32Flags;
 
 volatile uint32_t Counter_Timer0 = 0;
 volatile uint32_t Counter_Timer1 = 0;
-volatile char Store_Count0[10];
-volatile char Store_Count1[10];
+char Store_Count0[10];
+char Store_Count1[10];
 
 //*****************************************************************************
 //
@@ -269,7 +269,6 @@ main(void)
 {
     // Initialize a counter for timers 0 and 1
 
-    uint32_t counter = 0;
 
     //
     // Set the clocking to run directly from the crystal at 120MHz.

@@ -1,7 +1,7 @@
 ******************************************************************************
                   TI ARM Linker Unix v20.2.5                   
 ******************************************************************************
->> Linked Wed Mar 30 17:16:47 2022
+>> Linked Wed Mar 30 17:24:30 2022
 
 OUTPUT FILE NAME:   <timers.out>
 ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00004375
@@ -12,7 +12,7 @@ MEMORY CONFIGURATION
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
   FLASH                 00000000   00100000  0000567e  000fa982  R  X
-  SRAM                  20000000   00040000  000006cc  0003f934  RW X
+  SRAM                  20000000   00040000  000009cc  0003f634  RW X
 
 
 SEGMENT ALLOCATION MAP
@@ -24,10 +24,10 @@ run origin  load origin   length   init length attrs members
   00000200    00000200    00004552   00004552    r-x .text
   00004754    00004754    00000eec   00000eec    r-- .const
   00005640    00005640    00000040   00000040    r-- .cinit
-20000000    20000000    000006d0   00000000    rw-
+20000000    20000000    000009d0   00000000    rw-
   20000000    20000000    00000584   00000000    rw- .bss
-  20000588    20000588    00000100   00000000    rw- .stack
-  20000688    20000688    00000048   00000000    rw- .data
+  20000588    20000588    00000400   00000000    rw- .stack
+  20000988    20000988    00000048   00000000    rw- .data
 
 
 SECTION ALLOCATION MAP
@@ -222,18 +222,18 @@ section   page    origin      length       input sections
                   20000580    00000002     (.common:g_i16TouchX)
                   20000582    00000002     (.common:g_i16TouchY)
 
-.data      0    20000688    00000048     UNINITIALIZED
-                  20000688    0000002d     grlib.lib : widget.obj (.data)
-                  200006b5    00000003     --HOLE--
-                  200006b8    00000008     timers.obj (.data)
-                  200006c0    00000005     uartstdio.obj (.data)
-                  200006c5    00000003     --HOLE--
-                  200006c8    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : errno.c.obj (.data)
-                  200006cc    00000004     touch.obj (.data)
+.data      0    20000988    00000048     UNINITIALIZED
+                  20000988    0000002d     grlib.lib : widget.obj (.data)
+                  200009b5    00000003     --HOLE--
+                  200009b8    00000008     timers.obj (.data)
+                  200009c0    00000005     uartstdio.obj (.data)
+                  200009c5    00000003     --HOLE--
+                  200009c8    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : errno.c.obj (.data)
+                  200009cc    00000004     touch.obj (.data)
 
-.stack     0    20000588    00000100     UNINITIALIZED
+.stack     0    20000588    00000400     UNINITIALIZED
                   20000588    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
-                  2000058c    000000fc     --HOLE--
+                  2000058c    000003fc     --HOLE--
 
 __llvm_prf_cnts 
 *          0    20000000    00000000     UNINITIALIZED
@@ -317,16 +317,16 @@ MODULE SUMMARY
     +--+----------------------------------+-------+---------+---------+
        Total:                             2530    2614      369    
                                                                    
-       Stack:                             0       0         256    
+       Stack:                             0       0         1024   
        Linker Generated:                  0       57        0      
     +--+----------------------------------+-------+---------+---------+
-       Grand Total:                       17719   4384      1734   
+       Grand Total:                       17719   4384      2502   
 
 
 LINKER GENERATED COPY TABLES
 
 __TI_cinit_table @ 00005670 records: 2, size/record: 8, table size: 16
-	.data: load addr=00005640, load size=00000015 bytes, run addr=20000688, run size=00000048 bytes, compression=lzss
+	.data: load addr=00005640, load size=00000015 bytes, run addr=20000988, run size=00000048 bytes, compression=lzss
 	.bss: load addr=00005668, load size=00000008 bytes, run addr=20000000, run size=00000584 bytes, compression=zero_init
 
 
@@ -348,8 +348,8 @@ address   name
 0000373d  ADCSequenceStepConfigure      
 0000474f  C$$EXIT                       
 00003c91  ConfigureUART                 
-200006b8  Counter_Timer0                
-200006bc  Counter_Timer1                
+200009b8  Counter_Timer0                
+200009bc  Counter_Timer1                
 00004671  FPUEnable                     
 00004681  FPULazyStackingEnable         
 0000445d  GPIODirModeSet                
@@ -408,8 +408,8 @@ address   name
 000045ef  WidgetMutexGet                
 00004741  WidgetMutexPut                
 00004511  WidgetPointerMessage          
-20000688  __STACK_END                   
-00000100  __STACK_SIZE                  
+20000988  __STACK_END                   
+00000400  __STACK_SIZE                  
 20000688  __STACK_TOP                   
 00005670  __TI_CINIT_Base               
 00005680  __TI_CINIT_Limit              
@@ -464,10 +464,10 @@ UNDEFED   _system_post_cinit
 ffffffff  binit                         
 00004563  copysign                      
 00004563  copysignl                     
-200006c8  errno                         
+200009c8  errno                         
 00003b0d  frexp                         
 00003b0d  frexpl                        
-200006cc  g_i16TouchMin                 
+200009cc  g_i16TouchMin                 
 20000580  g_i16TouchX                   
 20000582  g_i16TouchY                   
 00000000  g_pfnVectors                  
@@ -476,7 +476,7 @@ ffffffff  binit
 00005610  g_psDefaultCodePointMapTable  
 00005368  g_sFontCm20                   
 000055cc  g_sKentec320x240x16_SSD2119   
-20000688  g_sRoot                       
+20000988  g_sRoot                       
 20000578  g_ui32Flags                   
 2000057c  g_ui32SysClock                
 00002b85  ldexp                         
@@ -502,8 +502,8 @@ address   name
 -------   ----                          
 00000000  __TI_static_base__            
 00000000  g_pfnVectors                  
-00000100  __STACK_SIZE                  
 00000201  __TI_printfi                  
+00000400  __STACK_SIZE                  
 00000c51  Kentec320x240x16_SSD2119Init  
 0000118d  main                          
 000016bd  GrFontGlyphRender             
@@ -637,13 +637,13 @@ address   name
 20000580  g_i16TouchX                   
 20000582  g_i16TouchY                   
 20000588  __stack                       
-20000688  __STACK_END                   
 20000688  __STACK_TOP                   
-20000688  g_sRoot                       
-200006b8  Counter_Timer0                
-200006bc  Counter_Timer1                
-200006c8  errno                         
-200006cc  g_i16TouchMin                 
+20000988  __STACK_END                   
+20000988  g_sRoot                       
+200009b8  Counter_Timer0                
+200009bc  Counter_Timer1                
+200009c8  errno                         
+200009cc  g_i16TouchMin                 
 ffffffff  __TI_pprof_out_hndl           
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
