@@ -94,8 +94,8 @@ uint32_t g_ui32Flags;
 
 volatile uint32_t Counter_Timer0 = 0;
 volatile uint32_t Counter_Timer1 = 0;
-char Store_Count0[10];
-char Store_Count1[10];
+volatile char Store_Count0[10];
+volatile char Store_Count1[10];
 
 //*****************************************************************************
 //
@@ -434,8 +434,8 @@ main(void)
         WidgetMessageQueueProcess();
         sprintf(Store_Count0, "%d", Counter_Timer0);
         sprintf(Store_Count1, "%d", Counter_Timer1);
-        GrStringDraw(&sContext, Store_Count0, -1, 180, 108, 1);
-        GrStringDraw(&sContext, Store_Count1, -1, 180, 128, 1);
+        GrStringDraw(&sContext, Store_Count0, strlen(Store_Count0), 180, 108, 1); //strlen() instead of -1
+        GrStringDraw(&sContext, Store_Count1, strlen(Store_Count1), 180, 128, 1);
 
 
     }
