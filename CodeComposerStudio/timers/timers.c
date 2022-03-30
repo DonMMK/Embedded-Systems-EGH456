@@ -351,13 +351,7 @@ main(void)
     FPUEnable();
     FPULazyStackingEnable();
 
-    //
-    // Run from the PLL at 120 MHz.
-    //
-    g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
-            SYSCTL_OSC_MAIN |
-            SYSCTL_USE_PLL |
-            SYSCTL_CFG_VCO_480), 120000000);
+
 
     //
     // Initialize the display driver.
