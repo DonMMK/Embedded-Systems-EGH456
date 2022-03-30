@@ -607,47 +607,67 @@ AppHibernateEnter(void)
 void
 SysTickIntHandler(void)
 {
-    uint32_t ui32Buttons;
+    uint8_t ui8Buttons;
+    uint8_t ui8ButtonsChanged;
 
-    ui32Buttons = ButtonsPoll(0,0);
+       //
+       // Grab the current, debounced state of the buttons.
+       //
+       ui8Buttons = ButtonsPoll(&ui8ButtonsChanged, 0);
 
-    switch(ui32Buttons & ALL_BUTTONS)
-    {
-        //
-        // The user pressed USR_SW1.
-        //
-        case USR_SW1:
-        {
-            if (Check_Only_Once == true){
-                //
-                // Set the hibernate flag to request a system hibernate cycle.
-                //
-                Button_Press_Counter++;
-                UARTprintf("\nNumber of button pressx %d\n" ,Button_Press_Counter);
-                HibernateDataSet(&Button_Press_Counter , 1);
-                Counter_Timer0 = 0;
-                Check_Only_Once = false;
-                g_bHibernate = false;
+       if(BUTTON_PRESSED(USR_SW1, ui8Buttons, ui8ButtonsChanged))
+       {
+           Button_Press_Counter++;
+           Counter_Timer0 = 0;
+           //UARTprintf(" Button 1 count: %d\n", button1Count);
 
-                break;
-            }
+           g_bHibernate = false;
+       }
 
 
-            else{
-                Check_Only_Once = true;
-                break;
-            }
 
-        }
-
-        //
-        // For all other cases do nothing.
-        //
-        default:
-        {
-            break;
-        }
-    }
+//    uint32_t ui32Buttons;
+//
+//    ui32Buttons = ButtonsPoll(0,0);
+//
+//    switch(ui32Buttons & ALL_BUTTONS)
+//    {
+//
+//
+//        //
+//        // The user pressed USR_SW1.
+//        //
+//        case USR_SW1:
+//        {
+//            if (Check_Only_Once == true){
+//
+//                 //Set the hibernate flag to request a system hibernate cycle.
+//
+//                Button_Press_Counter++;
+//                //HibernateDataSet(&Button_Press_Counter , 1);
+//                Counter_Timer0 = 0;
+//                Check_Only_Once = false;
+//                g_bHibernate = false;
+//
+//                break;
+//            }
+//
+//
+//            else{
+//                Check_Only_Once = true;
+//                break;
+//            }
+//
+//        }
+//
+//        //
+//        // For all other cases do nothing.
+//        //
+//        default:
+//        {
+//            break;
+//        }
+//    }
 
 }
 //*****************************************************************************
@@ -936,7 +956,7 @@ main(void)
                 //
 
                 Button_Press_Counter = 0;
-                HibernateDataSet(&Button_Press_Counter , 1);
+                //HibernateDataSet(&Button_Press_Counter , 1);
 
 
             }
