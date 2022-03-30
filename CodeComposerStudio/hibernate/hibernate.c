@@ -161,6 +161,7 @@ volatile bool g_bSetDate;
 volatile uint32_t Button_Press_Counter = 0;
 volatile uint32_t Time_Since_Reset = 0;
 volatile uint32_t Counter_Timer0 = 0;
+volatile uint32_t Count_Down = 11;
 
 volatile bool Check_Only_Once = true;
 
@@ -621,12 +622,13 @@ SysTickIntHandler(void)
                 //
                 // Set the hibernate flag to request a system hibernate cycle.
                 //
-
-                //Button_Press_Counter = Button_Press_Counter /3 ;
-                HibernateDataSet(&Button_Press_Counter , 1);
-                g_bHibernate = true;
                 Button_Press_Counter++;
+                UARTprintf("\nNumber of button pressx %d\n" ,Button_Press_Counter);
+                HibernateDataSet(&Button_Press_Counter , 1);
+                Counter_Timer0 = 0;
                 Check_Only_Once = false;
+                g_bHibernate = false;
+
                 break;
             }
 
@@ -939,6 +941,7 @@ main(void)
 
             }
 
+            //UARTprintf("\nNumber of seconds %d\n" ,Counter_Timer0++);
             UARTprintf("\nNumber of seconds %d\nNumber of presses %d \n" ,Counter_Timer0++, Button_Press_Counter);
             UARTFlushTx(false);
             //
