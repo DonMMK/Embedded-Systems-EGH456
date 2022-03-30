@@ -158,9 +158,9 @@ uint32_t g_ui32SysClock;
 volatile bool g_bSetDate;
 
 // Counter for How many times the button is pressed
-volatile int Button_Press_Counter;
-volatile int Time_Since_Reset;
-volatile uint32_t Counter_Timer0 = 0; // Counter to 10?
+volatile uint32_t Button_Press_Counter = 0;
+volatile uint32_t Time_Since_Reset = 0;
+volatile uint32_t Counter_Timer0 = 0;
 
 //*****************************************************************************
 //
@@ -202,40 +202,40 @@ __error__(char *pcFilename, uint32_t ui32Line)
 // The interrupt handler for the first timer interrupt.
 //
 //*****************************************************************************
-void
-Timer0IntHandler(void)
-{
-    char cOne, cTwo;
-    Counter_Timer0++;
-    //
-    // Clear the timer interrupt.
-    //
-    ROM_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-
-    //
-    // Toggle the flag for the first timer.
-    //
-    HWREGBITW(&g_ui32Flags, 0) ^= 1;
-
-    //
-    // Use the flags to Toggle the LED for this timer
-    //
-    GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_0, g_ui32Flags);
-
-    //
-    // Update the interrupt status.
-    //
-    ROM_IntMasterDisable();
-    cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
-    cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
-    UARTprintf("\rT1: %c  T2: %c", cOne, cTwo);
-    ROM_IntMasterEnable();
-
-
-    if( Counter_Timer0 >= 10){
-        g_bHibernate == true;
-    }
-}
+//void
+//Timer0IntHandler(void)
+//{
+//    char cOne, cTwo;
+//    //Counter_Timer0++;
+//    //
+//    // Clear the timer interrupt.
+//    //
+//    ROM_TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+//
+//    //
+//    // Toggle the flag for the first timer.
+//    //
+//    HWREGBITW(&g_ui32Flags, 0) ^= 1;
+//
+//    //
+//    // Use the flags to Toggle the LED for this timer
+//    //
+//    GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_0, g_ui32Flags);
+//
+//    //
+//    // Update the interrupt status.
+//    //
+//    ROM_IntMasterDisable();
+//    cOne = HWREGBITW(&g_ui32Flags, 0) ? '1' : '0';
+//    cTwo = HWREGBITW(&g_ui32Flags, 1) ? '1' : '0';
+//    UARTprintf("\rT1: %c  T2: %c", cOne, cTwo);
+//    ROM_IntMasterEnable();
+//
+//
+//    if( Counter_Timer0 >= 10){
+//        g_bHibernate == true;
+//    }
+//}
 
 //*****************************************************************************
 //
@@ -486,10 +486,10 @@ GetCalendarMatchValue(struct tm* sTime)
     uint32_t ui32MonthDays;
 
     //
-    // Get the current date and time and add 5 secs to it.
+    // Get the current date and time and add 60 secs to it.
     //
     HibernateCalendarGet(sTime);
-    sTime->tm_sec += 5;
+    sTime->tm_sec += 60;
 
     //
     // Check if seconds is out of bounds.  If so subtract seconds by 60 and
@@ -572,9 +572,9 @@ AppHibernateEnter(void)
     //
     // Print the buffer to the terminal.
     //
-    UARTprintf("To wake, wait for 5 seconds or press WAKE or"
+    UARTprintf("To wake, wait for 60 seconds or press WAKE or"
                "RESET\n");
-    UARTprintf("See README.txt for additional wake sources.\n");
+//    UARTprintf("See README.txt for additional wake sources.\n");
 
     //
     // Wait for UART transmit to complete before proceeding to
@@ -656,6 +656,8 @@ SysTickIntHandler(void)
             //
             // Set the hibernate flag to request a system hibernate cycle.
             //
+            Button_Press_Counter++;
+            HibernateDataSet(&Button_Press_Counter , 1);
             g_bHibernate = true;
             break;
         }
@@ -740,48 +742,58 @@ main(void)
         // Store the common part of the wake information message into a buffer.
         // The wake source will be appended based on the status bits.
         //
-        ui32Len = usnprintf(g_pcWakeBuf, sizeof(g_pcWakeBuf),
-                            "Wake Due To : ");
-
-        //
-        // Wake was due to RTC match.
-        //
-        if(ui32Status & HIBERNATE_INT_RTC_MATCH_0)
-        {
-            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
-                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
-                                g_ppcWakeSource[0]);
-        }
+//        ui32Len = usnprintf(g_pcWakeBuf, sizeof(g_pcWakeBuf),
+//                            "Wake Due To : ");
+//
+//        //
+//        // Wake was due to RTC match.
+//        //
+//        if(ui32Status & HIBERNATE_INT_RTC_MATCH_0)
+//        {
+//            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
+//                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
+//                                g_ppcWakeSource[0]);
+//        }
 
         //
         // Wake was due to Reset button.
         //
-        else if(ui32Status & HIBERNATE_INT_RESET_WAKE)
+        if(ui32Status & HIBERNATE_INT_RESET_WAKE)
         {
-            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
-                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
-                                g_ppcWakeSource[1]);
+//            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
+//                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
+//                                g_ppcWakeSource[1]);
+
+            // Implement to reset or read from the counter
+           Button_Press_Counter = 0;
+           HibernateDataSet(&Button_Press_Counter , 1);
+
+
+
+        }
+        else{
+            HibernateDataGet(&Button_Press_Counter , 1);
         }
 
-        //
-        // Wake was due to the External Wake pin.
-        //
-        else if(ui32Status & HIBERNATE_INT_PIN_WAKE)
-        {
-            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
-                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
-                                g_ppcWakeSource[2]);
-        }
-
-        //
-        // Wake was due to GPIO wake.
-        //
-        else if(ui32Status & HIBERNATE_INT_GPIO_WAKE)
-        {
-            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
-                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
-                                g_ppcWakeSource[3]);
-        }
+//        //
+//        // Wake was due to the External Wake pin.
+//        //
+//        else if(ui32Status & HIBERNATE_INT_PIN_WAKE)
+//        {
+//            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
+//                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
+//                                g_ppcWakeSource[2]);
+//        }
+//
+//        //
+//        // Wake was due to GPIO wake.
+//        //
+//        else if(ui32Status & HIBERNATE_INT_GPIO_WAKE)
+//        {
+//            ui32Len = usnprintf(&g_pcWakeBuf[ui32Len],
+//                                sizeof(g_pcWakeBuf) - ui32Len, "%s",
+//                                g_ppcWakeSource[3]);
+//        }
 
         //
         // If the wake is due to any of the configured wake sources, then read
@@ -815,8 +827,8 @@ main(void)
         //
         // Store that this was a system restart not wake from hibernation.
         //
-        ui32Len = usnprintf(g_pcWakeBuf, sizeof(g_pcWakeBuf), "%s",
-                            g_ppcWakeSource[4]);
+//        ui32Len = usnprintf(g_pcWakeBuf, sizeof(g_pcWakeBuf), "%s",
+//                            g_ppcWakeSource[4]);
 
         //
         // Set flag to indicate we need a valid date.  Date will then be set
@@ -828,8 +840,8 @@ main(void)
     //
     // Store the hibernation count message into the respective char buffer.
     //
-    usnprintf(g_pcHibBuf, sizeof(g_pcHibBuf), "Hibernate count = %u",
-              ui32HibernateCount);
+//    usnprintf(g_pcHibBuf, sizeof(g_pcHibBuf), "Hibernate count = %u",
+//              ui32HibernateCount);
 
     //
     // Enable RTC mode.
@@ -933,6 +945,11 @@ main(void)
         //
         if(bUpdate == true)
         {
+            //Add second counter
+            if (Counter_Timer0 >= 10){
+                g_bHibernate = true;
+            }
+
             //
             // Check if this is first ever update.
             //
@@ -941,90 +958,95 @@ main(void)
                 //
                 // Save current cursor position.
                 //
-                UARTprintf("\033[s");
-            }
 
+                Button_Press_Counter = 0;
+                HibernateDataSet(&Button_Press_Counter , 1);
+
+
+            }
+            UARTprintf("\nNumber of seconds %d\nNumber of presses %d \n" ,Counter_Timer0++, Button_Press_Counter);
+            UARTFlushTx(false);
             //
             // Resend the current status and time.
             //
-            UARTprintf("\033[%d;1H\033[K", g_ui8FirstLine);
-            UARTprintf("The current date and time is: %s\n", g_pcDateTimeBuf);
-            UARTprintf("\033[K");
-            UARTprintf("%s\n", g_pcHibBuf);
-            UARTprintf("\033[K");
-            UARTprintf("To Hibernate type 'hib' and press ENTER or press "
-                       "USR_SW1\n");
+//            UARTprintf("\033[%d;1H\033[K", g_ui8FirstLine);
+//            UARTprintf("The current date and time is: %s\n", g_pcDateTimeBuf);
+//            UARTprintf("\033[K");
+//            UARTprintf("%s\n", g_pcHibBuf);
+//            UARTprintf("\033[K");
+//            UARTprintf("To Hibernate type 'hib' and press ENTER or press "
+//                       "USR_SW1\n");
 
             //
             // Check if this is first ever update.
             //
-            if(g_bFirstUpdate == false)
-            {
-                //
-                // Restore cursor position.
-                //
-                UARTprintf("\033[u");
-
-            }
-            else
-            {
-                UARTprintf(">");
-            }
+//            if(g_bFirstUpdate == false)
+//            {
+//                //
+//                // Restore cursor position.
+//                //
+//                UARTprintf("\033[u");
+//
+//            }
+//            else
+//            {
+//                UARTprintf(">");
+//            }
 
             //
             // Flush the TX Buffer.
             //
-            UARTFlushTx(false);
+
 
             //
             // Clear the first update flag.
             //
-            g_bFirstUpdate = false;
+//            g_bFirstUpdate = false;
 
         }
 
         //
         // Check if a carriage return is present in the UART Buffer.
         //
-        if(UARTPeek('\r') != -1)
-        {
-            //
-            // A '\r' was detected, so get the line of text from the user.
-            //
-            UARTgets(g_pcInputBuf,sizeof(g_pcInputBuf));
-
-            //
-            // Pass the line from the user to the command processor.
-            // It will be parsed and valid commands executed.
-            //
-            i32CmdStatus = CmdLineProcess(g_pcInputBuf);
-
-            //
-            // Handle the case of bad command.
-            //
-            if(i32CmdStatus == CMDLINE_BAD_CMD)
-            {
-                UARTprintf("Command not recognized!\n");
-            }
-
-            //
-            // Handle the case of too many arguments.
-            //
-            else if(i32CmdStatus == CMDLINE_TOO_MANY_ARGS)
-            {
-                UARTprintf("Too many arguments for command processor!\n");
-            }
-
-            //
-            // Handle the case of too few arguments.
-            //
-            else if(i32CmdStatus == CMDLINE_TOO_FEW_ARGS)
-            {
-                UARTprintf("Too few arguments for command processor!\n");
-            }
-
-            UARTprintf(">");
-        }
+//        if(UARTPeek('\r') != -1)
+//        {
+//            //
+//            // A '\r' was detected, so get the line of text from the user.
+//            //
+//            UARTgets(g_pcInputBuf,sizeof(g_pcInputBuf));
+//
+//            //
+//            // Pass the line from the user to the command processor.
+//            // It will be parsed and valid commands executed.
+//            //
+//            i32CmdStatus = CmdLineProcess(g_pcInputBuf);
+//
+//            //
+//            // Handle the case of bad command.
+//            //
+//            if(i32CmdStatus == CMDLINE_BAD_CMD)
+//            {
+//                UARTprintf("Command not recognized!\n");
+//            }
+//
+//            //
+//            // Handle the case of too many arguments.
+//            //
+//            else if(i32CmdStatus == CMDLINE_TOO_MANY_ARGS)
+//            {
+//                UARTprintf("Too many arguments for command processor!\n");
+//            }
+//
+//            //
+//            // Handle the case of too few arguments.
+//            //
+//            else if(i32CmdStatus == CMDLINE_TOO_FEW_ARGS)
+//            {
+//                UARTprintf("Too few arguments for command processor!\n");
+//            }
+//
+//            UARTprintf(">");
+//        }
 
         //
         // Check if user wants to enter hibernation.
@@ -1034,9 +1056,9 @@ main(void)
             //
             // Increment the hibernation count, and store it in the
             // battery-backed memory.
-            //
-            ui32HibernateCount++;
-            HibernateDataSet(&ui32HibernateCount, 1);
+//            //
+//            ui32HibernateCount++;
+//            HibernateDataSet(&ui32HibernateCount, 1);
 
             //
             // Yes - Clear the flag.
