@@ -434,8 +434,8 @@ main(void)
         WidgetMessageQueueProcess();
         sprintf(Store_Count0, "%d", Counter_Timer0);
         sprintf(Store_Count1, "%d", Counter_Timer1);
-        GrStringDraw(&sContext, Store_Count0, -1, 195, 108, 1);
-        GrStringDraw(&sContext, Store_Count1, -1, 195, 128, 1);
+        GrStringDraw(&sContext, Store_Count0, -1, 180, 108, 1);
+        GrStringDraw(&sContext, Store_Count1, -1, 180, 128, 1);
 
 
     }

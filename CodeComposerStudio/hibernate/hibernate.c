@@ -162,6 +162,8 @@ volatile uint32_t Button_Press_Counter = 0;
 volatile uint32_t Time_Since_Reset = 0;
 volatile uint32_t Counter_Timer0 = 0;
 
+volatile bool Check_Only_Once = true;
+
 //*****************************************************************************
 //
 // Buffers to store display information.
@@ -615,15 +617,25 @@ SysTickIntHandler(void)
         //
         case USR_SW1:
         {
-            //
-            // Set the hibernate flag to request a system hibernate cycle.
-            //
+            if (Check_Only_Once == true){
+                //
+                // Set the hibernate flag to request a system hibernate cycle.
+                //
 
-            //Button_Press_Counter = Button_Press_Counter /3 ;
-            HibernateDataSet(&Button_Press_Counter , 1);
-            g_bHibernate = true;
-            Button_Press_Counter++;
-            break;
+                //Button_Press_Counter = Button_Press_Counter /3 ;
+                HibernateDataSet(&Button_Press_Counter , 1);
+                g_bHibernate = true;
+                Button_Press_Counter++;
+                Check_Only_Once = false;
+                break;
+            }
+
+
+            else{
+                Check_Only_Once = true;
+                break;
+            }
+
         }
 
         //
