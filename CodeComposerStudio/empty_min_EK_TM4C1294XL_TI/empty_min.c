@@ -1,92 +1,50 @@
-/*
- * Copyright (c) 2015, Texas Instruments Incorporated
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 //LAB 3 TASK C SKELETON FILE
 //This file is not complete and requires modification to get Task C to work
 //This file will not compile in its current form
 //You also need to have some correct modules included in the TI-RTOS .cfg file
+
+// Add include files here
+
 /* XDCtools Header files */
 #include <xdc/std.h>
 #include <xdc/runtime/System.h>
 #include <xdc/runtime/Types.h>
-
 /* BIOS Header files */
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Swi.h>
 #include <ti/sysbios/hal/Hwi.h>
 #include <ti/sysbios/gates/GateHwi.h>
-
 /* TI-RTOS Header files */
-// #include <ti/drivers/EMAC.h>
 #include <ti/drivers/GPIO.h>
-// #include <ti/drivers/I2C.h>
-// #include <ti/drivers/SDSPI.h>
-// #include <ti/drivers/SPI.h>
-// #include <ti/drivers/UART.h>
-// #include <ti/drivers/USBMSCHFatFs.h>
-// #include <ti/drivers/Watchdog.h>
-// #include <ti/drivers/WiFi.h>
-
 /* Board Header file */
 #include "Board.h"
-
-
+#include "utils/ustdlib.h"
+#include "utils/uartstdio.h"
+#include "utils/cmdline.h"
 /* std header files */
 #include <stdint.h>
 #include <stdbool.h>
-
 /* Tiva C series macros header files */
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
-
+#include "inc/hw_gpio.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_sysctl.h"
 /* Tiva C series driverlib header files */
 #include "driverlib/sysctl.h"
 #include "driverlib/systick.h"
 #include "driverlib/uart.h"
-
-
 /* grlib header files */
 #include "grlib/grlib.h"
 #include "grlib/widget.h"
 #include "grlib/canvas.h"
 #include "drivers/frame.h"
-
 /* LCD drivers header files */
 #include "drivers/Kentec320x240x16_ssd2119_spi.h"
 #include "drivers/touch.h"
 
-
-
-#define TASKSTACKSIZE   512
+#define TASKSTACKSIZE   1024
 
 Task_Struct task1Struct;
 Char task1Stack[TASKSTACKSIZE];
@@ -97,35 +55,28 @@ GateHwi_Params gHwiprms;
 Swi_Handle SwiHandle;
 Hwi_Handle UartHwiHandle;
 
+uint32_t LineDrawingInitialX[32];
+uint32_t LineDrawingInitialY[32];
 
-
-// character received in hwi, for swi to read
-char charRec;
-
-
-// Drawing variables
-
-uint32_t cursorX;
-uint32_t cursorY;
-uint32_t prevX;
-uint32_t prevY;
-uint32_t linesStartX[32];
-uint32_t linesStartY[32];
 uint32_t linesEndX[32];
 uint32_t linesEndY[32];
-uint32_t linesCount;
+uint32_t NumOfLines;
 
+uint32_t XPreviousValue;
+uint32_t YPreviousValue;
 
+uint32_t XCoordinateCursor;
+uint32_t YCoordinateCursor;
 
-// display boundaries
-uint32_t xUpperLimit;
-uint32_t yUpperLimit;
-uint32_t xLowerLimit;
-uint32_t yLowerLimit;
+// For the display
+uint32_t LimitForLowerX;
+uint32_t LimitForLowerY;
 
+uint32_t LimitForUpperX;
+uint32_t LimitForUpperY;
+
+char InputChar; // Input for the Hwi and Swi
 bool updateScreen;
-
-
 
 //Interrupt Handlers
 void UARTFxn(){
@@ -137,7 +88,7 @@ void UARTFxn(){
     UARTIntClear(UART0_BASE, intStatus);
 
     //This should output to console, use to check if UART is working
-    System_printf("HWI\n");
+    System_printf("UART is working - HWI\n");
 
 
     //Get character from UART
@@ -148,17 +99,17 @@ void UARTFxn(){
     gateKey = GateHwi_enter(gateHwi);
 
 
-    // update cursor position
-    if (c == 'w' && cursorY > yLowerLimit) {
-        cursorY-=5;
-    } else if (c == 'a' && cursorX > xLowerLimit) {
-        cursorX-=5;
-    } else if (c == 's' && cursorY < yUpperLimit) {
-        cursorY+=5;
-    } else if (c == 'd' && cursorX < xUpperLimit) {
-        cursorX+=5;
+    // Change the cursor position when character pressed
+    if (c == 'w' && YCoordinateCursor > LimitForLowerY) { // Limit for upper y is 30
+        YCoordinateCursor-=5;
+    } else if (c == 'a' && XCoordinateCursor > LimitForLowerX) {
+        XCoordinateCursor-=5;
+    } else if (c == 's' && YCoordinateCursor < LimitForUpperY) {
+        YCoordinateCursor+=5;
+    } else if (c == 'd' && XCoordinateCursor < LimitForUpperX) {
+        XCoordinateCursor+=5;
     } else if (c == '\r' || c == '\x7f'){ // trigger swi if return or backspace pressed
-        charRec = c;
+        InputChar = c;
         Swi_inc(SwiHandle);
     }
 
@@ -180,51 +131,50 @@ void SwiFxn(){
     gateKey = GateHwi_enter(gateHwi);
 
 
-    // if return carriage received, update lines buffer for display task
-    if (charRec == '\r'){
+    // update line buffer when the carriage return is pressed - change accordingly on mac
+    if (InputChar == '\r'){
 
-        // if first time here, set previous location as current
-        // (won't draw, lines count still 0)
-        if (prevX == 0 && prevY == 0){
+        // Dont draw anything the first time
+        if (XPreviousValue == 0 && YPreviousValue == 0){
 
-            prevX = cursorX;
-            prevY = cursorY;
+            XPreviousValue = XCoordinateCursor;
+            YPreviousValue = YCoordinateCursor;
 
         } else {
 
-            // wrap around buffer
-            if (linesCount == 32) { linesCount = 0; }
+            // if lines are drawn too many times reset the buffer
+            if (NumOfLines == 32)
+            {
+                NumOfLines = 0;
+            }
 
-            // line drawing start position
-            linesStartX[linesCount] = prevX;
-            linesStartY[linesCount] = prevY;
+            // Initial position of the line drawn
+            LineDrawingInitialX[NumOfLines] = XPreviousValue;
+            LineDrawingInitialY[NumOfLines] = YPreviousValue;
 
-            // line drawing end position
-            linesEndX[linesCount] = cursorX;
-            linesEndY[linesCount] = cursorY;
+            // Final position of the line drawn
+            linesEndX[NumOfLines] = XCoordinateCursor;
+            linesEndY[NumOfLines] = YCoordinateCursor;
 
-            // increment count of lines to draw for display task
-            linesCount++;
+            NumOfLines = NumOfLines + 1; // Increase the line count
 
-            // update previous location to current for the next line drawing
-            prevX = cursorX;
-            prevY = cursorY;
+            // Assign the current location to previous for next line drawing
+            XPreviousValue = XCoordinateCursor;
+            YPreviousValue = YCoordinateCursor;
 
 
         }
 
-    } else if (charRec == '\x7f') { // backspace received
+    } else if (InputChar == '\x7f') { // mac key for backspace - vs delete
 
-        // clear lines buffer
-        memset(linesStartX, 0, 32);
-        memset(linesStartY, 0, 32);
+        // Reset the buffer array
+        memset(LineDrawingInitialX, 0, 32);
+        memset(LineDrawingInitialY, 0, 32);
 
-        // set count of lines to draw to zero for display task
-        linesCount = 0;
+        // Reset line count to zero
+        NumOfLines = 0;
 
     }
-
-
 
     GateHwi_leave(gateHwi, gateKey);
 
@@ -289,9 +239,7 @@ void displayFxn(UArg arg0, UArg arg1)
                                                  SYSCTL_CFG_VCO_480), 120000000);
     Kentec320x240x16_SSD2119Init(g_ui32SysClock);
 
-    //
     // Initialize the graphics context.
-    //
     GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
 
     System_printf("LCD initialized.\n");
@@ -302,7 +250,7 @@ void displayFxn(UArg arg0, UArg arg1)
     //
     // Draw the application frame.
     //
-    FrameDraw(&sContext, "Lab 3 Drawing App");
+    FrameDraw(&sContext, "Don Lab 03");
 
 
     // for clearing screen
@@ -312,22 +260,22 @@ void displayFxn(UArg arg0, UArg arg1)
     sRect.i16YMax = GrContextDpyHeightGet(&sContext) - 1;
 
     // set cursor to be in display center
-    cursorX = GrContextDpyWidthGet(&sContext) / 2;
-    cursorY = GrContextDpyHeightGet(&sContext) / 2;
+    XCoordinateCursor = GrContextDpyWidthGet(&sContext) / 2;
+    YCoordinateCursor = GrContextDpyHeightGet(&sContext) / 2;
 
 
     // set previous location to 0 (default, wont draw from this point)
-    prevX = 0;
-    prevY = 0;
+    XPreviousValue = 0;
+    YPreviousValue = 0;
 
     // display boundaries for cursor movement
-    xUpperLimit = GrContextDpyWidthGet(&sContext) - 10;
-    yUpperLimit = GrContextDpyHeightGet(&sContext) - 10;
-    xLowerLimit = 10;
-    yLowerLimit = 30;
+    LimitForUpperX = GrContextDpyWidthGet(&sContext) - 10;
+    LimitForUpperY = GrContextDpyHeightGet(&sContext) - 10;
+    LimitForLowerX = 10;
+    LimitForLowerY = 30;
 
     // lines drawn
-    linesCount = 0;
+    NumOfLines = 0;
 
     updateScreen = true;
 
@@ -348,13 +296,13 @@ void displayFxn(UArg arg0, UArg arg1)
 
             // draw cursor
             GrContextForegroundSet(&sContext, ClrWhite);
-            GrStringDrawCentered(&sContext, "X", -1, cursorX, cursorY, 0);
+            GrStringDrawCentered(&sContext, "X", -1, XCoordinateCursor, YCoordinateCursor, 0);
 
 
             // draw lines from buffers
             int i;
-            for (i = 0; i < linesCount; i++){
-                GrLineDraw(&sContext, linesStartX[i], linesStartY[i], linesEndX[i], linesEndY[i]);
+            for (i = 0; i < NumOfLines; i++){
+                GrLineDraw(&sContext, LineDrawingInitialX[i], LineDrawingInitialY[i], linesEndX[i], linesEndY[i]);
             }
 
             updateScreen = false;
@@ -392,7 +340,7 @@ int main(void){
 
     //Create the task threads
     //Can use create or construct
-    //Construct requies stack parameters to be set
+    //Construct requi es stack parameters to be set
     Task_Params_init(&taskParams);
     taskParams.stackSize = TASKSTACKSIZE;
     taskParams.stack = &task1Stack;
