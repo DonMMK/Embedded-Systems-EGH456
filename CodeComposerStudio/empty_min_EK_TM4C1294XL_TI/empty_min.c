@@ -44,36 +44,42 @@
 #include "drivers/Kentec320x240x16_ssd2119_spi.h"
 #include "drivers/touch.h"
 
+// Increase the stacksize if needed
 #define TASKSTACKSIZE   1024
 
+// Task
 Task_Struct task1Struct;
 Char task1Stack[TASKSTACKSIZE];
 
+// Hardware - Software interrupt handles
 GateHwi_Handle gateHwi;
 GateHwi_Params gHwiprms;
 
 Swi_Handle SwiHandle;
 Hwi_Handle UartHwiHandle;
 
-uint32_t LineDrawingInitialX[32];
-uint32_t LineDrawingInitialY[32];
 
-uint32_t linesEndX[32];
-uint32_t linesEndY[32];
-uint32_t NumOfLines;
+// Variables and Buffers for drawing the shapes
+uint32_t LineDrawingInitialX[32]; // Use larger buffers if neccessary
+uint32_t LineDrawingInitialY[32]; // Use larger buffers if neccessary
+
+uint32_t NumOfLines; // To count the number of lines that are being drawn.
+
+uint32_t XCoordLineFinish[32];
+uint32_t YCoordLineFinish[32];
 
 uint32_t XPreviousValue;
 uint32_t YPreviousValue;
 
-uint32_t XCoordinateCursor;
-uint32_t YCoordinateCursor;
+uint32_t XCoordinateCursor; // For the cursor positions
+uint32_t YCoordinateCursor; // For the cursor positions
 
 // For the display
-uint32_t LimitForLowerX;
-uint32_t LimitForLowerY;
+uint32_t LimitForLowerX; // Boundary Criteria for the display - Lower X
+uint32_t LimitForLowerY; // Boundary Criteria for the display - Lower Y
 
-uint32_t LimitForUpperX;
-uint32_t LimitForUpperY;
+uint32_t LimitForUpperX; // Boundary Criteria for the display - High X
+uint32_t LimitForUpperY; // Boundary Criteria for the display - High Y
 
 char InputChar; // Input for the Hwi and Swi
 bool updateScreen;
@@ -100,7 +106,8 @@ void UARTFxn(){
 
 
     // Change the cursor position when character pressed
-    if (c == 'w' && YCoordinateCursor > LimitForLowerY) { // Limit for upper y is 30
+    // The character is taken in through the UART Console
+    if (c == 'w' && YCoordinateCursor > LimitForLowerY) {           // Limit for upper y is 30
         YCoordinateCursor-=5;
     } else if (c == 'a' && XCoordinateCursor > LimitForLowerX) {
         XCoordinateCursor-=5;
@@ -113,6 +120,7 @@ void UARTFxn(){
         Swi_inc(SwiHandle);
     }
 
+    // Change the flag to update the cursor
     updateScreen = true;
 
     GateHwi_leave(gateHwi, gateKey);
@@ -125,7 +133,7 @@ void SwiFxn(){
     UInt gateKey;
 
     //Ensure to output system prints
-    System_printf("SWI \n");
+    System_printf("SWI is triggered\n");
 
     //use this to access shared buffers
     gateKey = GateHwi_enter(gateHwi);
@@ -153,8 +161,8 @@ void SwiFxn(){
             LineDrawingInitialY[NumOfLines] = YPreviousValue;
 
             // Final position of the line drawn
-            linesEndX[NumOfLines] = XCoordinateCursor;
-            linesEndY[NumOfLines] = YCoordinateCursor;
+            XCoordLineFinish[NumOfLines] = XCoordinateCursor;
+            YCoordLineFinish[NumOfLines] = YCoordinateCursor;
 
             NumOfLines = NumOfLines + 1; // Increase the line count
 
@@ -245,17 +253,13 @@ void displayFxn(UArg arg0, UArg arg1)
     System_printf("LCD initialized.\n");
     System_flush();
 
-
-    //Title screen for display
-    //
-    // Draw the application frame.
-    //
+    // Draws a frame - Change to Rect fill method in Lab 02 if needed
     FrameDraw(&sContext, "Don Lab 03");
 
 
     // for clearing screen
     sRect.i16XMin = 0;
-    sRect.i16YMin = 23;
+    sRect.i16YMin = 15;
     sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
     sRect.i16YMax = GrContextDpyHeightGet(&sContext) - 1;
 
@@ -302,7 +306,7 @@ void displayFxn(UArg arg0, UArg arg1)
             // draw lines from buffers
             int i;
             for (i = 0; i < NumOfLines; i++){
-                GrLineDraw(&sContext, LineDrawingInitialX[i], LineDrawingInitialY[i], linesEndX[i], linesEndY[i]);
+                GrLineDraw(&sContext, LineDrawingInitialX[i], LineDrawingInitialY[i], XCoordLineFinish[i], YCoordLineFinish[i]);
             }
 
             updateScreen = false;
