@@ -2,7 +2,7 @@
 <link_info>
    <banner>TI ARM Linker Unix v20.2.5.LTS</banner>
    <copyright>Copyright (c) 1996-2018 Texas Instruments Incorporated</copyright>
-   <link_time>0x62318678</link_time>
+   <link_time>0x6268e03b</link_time>
    <link_errors>0x0</link_errors>
    <output_file>blinky.out</output_file>
    <entry_point>
@@ -268,7 +268,7 @@
          <size>0x10b</size>
          <input_file_ref idref="fl-c0"/>
       </object_component>
-      <object_component id="oc-69">
+      <object_component id="oc-66">
          <name>.debug_info</name>
          <load_address>0x1359</load_address>
          <run_address>0x1359</run_address>
@@ -282,7 +282,7 @@
          <size>0x153</size>
          <input_file_ref idref="fl-c4"/>
       </object_component>
-      <object_component id="oc-da">
+      <object_component id="oc-dc">
          <name>.debug_info</name>
          <load_address>0x164e</load_address>
          <run_address>0x164e</run_address>
@@ -386,7 +386,7 @@
          <size>0x33</size>
          <input_file_ref idref="fl-c0"/>
       </object_component>
-      <object_component id="oc-68">
+      <object_component id="oc-69">
          <name>.debug_line</name>
          <load_address>0x3f5</load_address>
          <run_address>0x3f5</run_address>
@@ -400,7 +400,7 @@
          <size>0x40</size>
          <input_file_ref idref="fl-c4"/>
       </object_component>
-      <object_component id="oc-dd">
+      <object_component id="oc-da">
          <name>.debug_line</name>
          <load_address>0x47d</load_address>
          <run_address>0x47d</run_address>
@@ -442,7 +442,7 @@
          <size>0x54</size>
          <input_file_ref idref="fl-2"/>
       </object_component>
-      <object_component id="oc-67">
+      <object_component id="oc-6a">
          <name>.debug_frame</name>
          <load_address>0x1ac</load_address>
          <run_address>0x1ac</run_address>
@@ -456,7 +456,7 @@
          <size>0x54</size>
          <input_file_ref idref="fl-c4"/>
       </object_component>
-      <object_component id="oc-de">
+      <object_component id="oc-db">
          <name>.debug_frame</name>
          <load_address>0x250</load_address>
          <run_address>0x250</run_address>
@@ -644,7 +644,7 @@
          <size>0x20</size>
          <input_file_ref idref="fl-2"/>
       </object_component>
-      <object_component id="oc-66">
+      <object_component id="oc-67">
          <name>.debug_aranges</name>
          <load_address>0xa0</load_address>
          <run_address>0xa0</run_address>
@@ -658,7 +658,7 @@
          <size>0x20</size>
          <input_file_ref idref="fl-c4"/>
       </object_component>
-      <object_component id="oc-db">
+      <object_component id="oc-dd">
          <name>.debug_aranges</name>
          <load_address>0xe0</load_address>
          <run_address>0xe0</run_address>
@@ -714,7 +714,7 @@
          <size>0x1e</size>
          <input_file_ref idref="fl-c0"/>
       </object_component>
-      <object_component id="oc-6a">
+      <object_component id="oc-68">
          <name>.debug_pubnames</name>
          <load_address>0xde</load_address>
          <run_address>0xde</run_address>
@@ -728,7 +728,7 @@
          <size>0x27</size>
          <input_file_ref idref="fl-c4"/>
       </object_component>
-      <object_component id="oc-dc">
+      <object_component id="oc-de">
          <name>.debug_pubnames</name>
          <load_address>0x132</load_address>
          <run_address>0x132</run_address>
@@ -895,9 +895,9 @@
             <object_component_ref idref="oc-3a"/>
             <object_component_ref idref="oc-34"/>
             <object_component_ref idref="oc-25"/>
-            <object_component_ref idref="oc-69"/>
+            <object_component_ref idref="oc-66"/>
             <object_component_ref idref="oc-ab"/>
-            <object_component_ref idref="oc-da"/>
+            <object_component_ref idref="oc-dc"/>
             <object_component_ref idref="oc-195"/>
          </contents>
       </logical_group>
@@ -920,9 +920,9 @@
             <object_component_ref idref="oc-3d"/>
             <object_component_ref idref="oc-37"/>
             <object_component_ref idref="oc-7e"/>
-            <object_component_ref idref="oc-68"/>
+            <object_component_ref idref="oc-69"/>
             <object_component_ref idref="oc-ae"/>
-            <object_component_ref idref="oc-dd"/>
+            <object_component_ref idref="oc-da"/>
          </contents>
       </logical_group>
       <logical_group id="lg-17e" display="never" color="cyan">
@@ -936,9 +936,9 @@
             <object_component_ref idref="oc-32"/>
             <object_component_ref idref="oc-3e"/>
             <object_component_ref idref="oc-38"/>
-            <object_component_ref idref="oc-67"/>
+            <object_component_ref idref="oc-6a"/>
             <object_component_ref idref="oc-af"/>
-            <object_component_ref idref="oc-de"/>
+            <object_component_ref idref="oc-db"/>
          </contents>
       </logical_group>
       <logical_group id="lg-180" display="never" color="cyan">
@@ -989,9 +989,9 @@
             <object_component_ref idref="oc-2f"/>
             <object_component_ref idref="oc-3b"/>
             <object_component_ref idref="oc-35"/>
-            <object_component_ref idref="oc-66"/>
+            <object_component_ref idref="oc-67"/>
             <object_component_ref idref="oc-ac"/>
-            <object_component_ref idref="oc-db"/>
+            <object_component_ref idref="oc-dd"/>
          </contents>
       </logical_group>
       <logical_group id="lg-186" display="never" color="cyan">
@@ -1007,9 +1007,9 @@
             <object_component_ref idref="oc-3c"/>
             <object_component_ref idref="oc-36"/>
             <object_component_ref idref="oc-26"/>
-            <object_component_ref idref="oc-6a"/>
+            <object_component_ref idref="oc-68"/>
             <object_component_ref idref="oc-ad"/>
-            <object_component_ref idref="oc-dc"/>
+            <object_component_ref idref="oc-de"/>
          </contents>
       </logical_group>
       <logical_group id="lg-188" display="never" color="cyan">
