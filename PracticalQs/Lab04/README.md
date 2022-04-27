@@ -4,7 +4,7 @@
 Question: Which I2C of the TM4C1294NCPDT is being utilised by the sensor?  
 
 Answer: The I2C0 which is connected to Port B - Pin 2 & 3.  
-
+--
 
 Question: Which GPIO port and pins of the TM4C1294NCPDT does the I2C use?  
 
