@@ -14,7 +14,7 @@ Answer: GPIO Port B - Pins 2 & 3.
 Question: What bits are being written to the Range Number Field in the configuration register
 when SensorOpt3001Enable(true) is called?  
 
-Answer: The config enable in hex is 10C4, this given in binary is -> 0001 0000 1100 0100. Where the RNF is the bits in the left 
+Answer: The config enable in hex is 10C4 -> Take equivalent C410, this given in binary is -> 1100 0100 0001 0000. Where the RNF is the bits in the left 
 most corner - Bits 12 to 15. Page 21.  
 
 
