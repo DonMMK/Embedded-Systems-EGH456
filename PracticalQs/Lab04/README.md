@@ -1,4 +1,4 @@
-## Pracical 02
+## Pracical 04
 
 ### Task A
 Question: Which I2C of the TM4C1294NCPDT is being utilised by the sensor?  
