@@ -1,0 +1,1 @@
+"./light_opt3001.obj" "./startup_ccs.obj" "./drivers/buttons.obj" "./drivers/i2cOptDriver.obj" "./drivers/opt3001.obj" "./drivers/pinout.obj" "./utils/uartstdio.obj" "./utils/ustdlib.obj" "../light_opt3001.cmd" -llibc.a -l"C:/ti/tivaware_c_series_2_1_4_178/driverlib/ccs/Debug/driverlib.lib" 

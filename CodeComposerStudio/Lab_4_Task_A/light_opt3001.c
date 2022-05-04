@@ -247,6 +247,7 @@ int main(void)
     {
 
         SysCtlDelay(g_ui32SysClock/100);
+        I2C0EventDetectInterrupt();
 
 
 //        SysCtlDelay(g_ui32SysClock/100);

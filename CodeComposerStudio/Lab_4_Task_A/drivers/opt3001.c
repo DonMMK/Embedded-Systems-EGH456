@@ -198,6 +198,7 @@ void sensorOpt3001Enable(bool enable)
 }
 
 
+
 void SensorOpt3001ReadResult(uint16_t *rawData)
 {
     readI2C(OPT3001_I2C_ADDRESS, REG_RESULT, (uint8_t *)rawData);
