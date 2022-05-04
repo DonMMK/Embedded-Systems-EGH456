@@ -75,6 +75,8 @@
 
 /* Bit values */
 #define DATA_RDY_BIT                    0x0080  // Data ready
+#define FLAG_HIGH_BIT                   0x0060
+#define FLAG_LOW_BIT                    0x00
 
 /* Register length */
 #define REGISTER_LENGTH                 2
@@ -99,6 +101,60 @@
  */
 
 
+void SensorOpt3001SetLow()
+{
+    uint16_t val;
+    val = 0xFFF;
+    writeI2C(OPT3001_I2C_ADDRESS, REG_LOW_LIMIT, (uint8_t*)&val);
+}
+void SensorOpt3001SetHigh()
+{
+    uint16_t val;
+    val = 0x789A;
+    writeI2C(OPT3001_I2C_ADDRESS, REG_HIGH_LIMIT, (uint8_t*)&val);
+}
+
+bool isHighFlag(uint16_t *rawData)
+{
+    bool success;
+    uint16_t val;
+
+    sensorOpt3001Read(&val);
+
+    success = ( (val >> 7 & 0x00FF) & FLAG_HIGH_BIT) == FLAG_HIGH_BIT;
+
+    if (success){
+        sensorOpt3001Read(&val);
+
+        *rawData = (val << 7) | (val>>7 &0xFF);
+    } else {
+        *rawData = 0;
+    }
+
+    return success;
+}
+
+bool isLowFlag(uint16_t *rawData)
+{
+    bool success;
+        uint16_t val;
+
+        sensorOpt3001Read(&val);
+
+        success = ( (val >> 6 & 0x00FF) & FLAG_LOW_BIT) == FLAG_LOW_BIT;
+
+        if (success){
+            sensorOpt3001Read(&val);
+            *rawData = (val << 6) | (val>>6 &0xFF);
+        } else {
+            *rawData = 0;
+        }
+
+        return success;
+}
+
+
+
 /**************************************************************************************************
  * @fn          sensorOpt3001Init
  *
@@ -109,6 +165,10 @@
 bool sensorOpt3001Init(void)
 {
 	sensorOpt3001Enable(false);
+
+	SensorOpt3001SetLow();
+	SensorOpt3001SetHigh();
+
 
 	return (true);
 }
@@ -136,6 +196,22 @@ void sensorOpt3001Enable(bool enable)
 
 	writeI2C(OPT3001_I2C_ADDRESS, REG_CONFIGURATION, (uint8_t*)&val);
 }
+
+
+void SensorOpt3001ReadResult(uint16_t *rawData)
+{
+    readI2C(OPT3001_I2C_ADDRESS, REG_RESULT, (uint8_t *)rawData);
+}
+
+/*
+ * Reads CONFIGURATION register
+ * Returns contents of register
+ */
+void SensorOpt3001ReadConfig(uint16_t *rawData)
+{
+    readI2C(OPT3001_I2C_ADDRESS, REG_CONFIGURATION, (uint8_t *)rawData);
+}
+
 
 
 /**************************************************************************************************

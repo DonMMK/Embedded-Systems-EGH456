@@ -115,6 +115,48 @@ void ConfigureUART(void)
     UARTStdioConfig(0, 115200, g_ui32SysClock);
 }
 
+
+//*****************************************************************************
+//
+// Detect Interrupt
+//
+//*****************************************************************************
+
+uint32_t check_delay;
+void I2C0EventDetectInterrupt(void){
+    check_delay +=1;
+
+    if(check_delay >(g_ui32SysClock/300)){
+        check_delay =  0;
+        bool success;
+        uint16_t  rawData = 0;
+        float     convertedLux = 0;
+        char      tempStr[50];
+
+        success = sensorOpt3001Read(&rawData);
+        if (success) {
+            sensorOpt3001Convert(rawData, &convertedLux);
+            //Relevant if conditions
+            if(convertedLux > 2818){
+                 sprintf(tempStr, "High Light Event: %5.2f Lux\n", convertedLux);
+                 UARTprintf("%s\n", tempStr);
+            }
+            else if(convertedLux < 40.95){
+                sprintf(tempStr, "Low Light Event: %5.2f Lux\n", convertedLux);
+                UARTprintf("%s\n", tempStr);
+            }else{
+                sprintf(tempStr, "Lux: %5.2f\n", convertedLux);
+                UARTprintf("%s\n", tempStr);
+            }
+        }
+
+    }
+
+}
+
+
+
+
 //*****************************************************************************
 //
 // Main 'C' Language entry point.
@@ -133,6 +175,10 @@ int main(void)
     g_ui32SysClock = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
                                              SYSCTL_OSC_MAIN | SYSCTL_USE_PLL |
                                              SYSCTL_CFG_VCO_480), 120000000);
+
+
+    // Initialise the delay
+    check_delay = 0;
 
     //
     // Configure the device pins for this board.
@@ -199,18 +245,24 @@ int main(void)
     // Loop Forever
     while(1)
     {
+
         SysCtlDelay(g_ui32SysClock/100);
 
-        //Read and convert OPT values
-        success = sensorOpt3001Read(&rawData);
 
-        if (success) {
-            sensorOpt3001Convert(rawData, &convertedLux);
-
-            // Construct Text
-            sprintf(tempStr, "Lux: %5.2f\n", convertedLux);
-            UARTprintf("%s\n", tempStr);
-        }
+//        SysCtlDelay(g_ui32SysClock/100);
+//
+//        //Read and convert OPT values
+//        success = sensorOpt3001Read(&rawData);
+//
+//        if (success) {
+//            sensorOpt3001Convert(rawData, &convertedLux);
+//
+//            // Construct Text
+//            sprintf(tempStr, "Lux: %5.2f\n", convertedLux);
+//            UARTprintf("%s\n", tempStr);
+//
+//
+//        }
 
     }
 }
