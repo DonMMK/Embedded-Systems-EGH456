@@ -121,7 +121,6 @@ void ConfigureUART(void)
 // Detect Interrupt
 //
 //*****************************************************************************
-
 uint32_t check_delay;
 void I2C0EventDetectInterrupt(void){
     check_delay +=1;
@@ -155,8 +154,6 @@ void I2C0EventDetectInterrupt(void){
 }
 
 
-
-
 //*****************************************************************************
 //
 // Main 'C' Language entry point.
@@ -176,15 +173,12 @@ int main(void)
                                              SYSCTL_OSC_MAIN | SYSCTL_USE_PLL |
                                              SYSCTL_CFG_VCO_480), 120000000);
 
-
-    // Initialise the delay
     check_delay = 0;
-
     //
     // Configure the device pins for this board.
     // This application does not use Ethernet or USB.
     //
-    PinoutSet(false, false);
+    PinoutSet(false,false);
 
     //
     // Initialize the UART.
@@ -225,6 +219,9 @@ int main(void)
     //
     IntMasterEnable();
 
+    GPIOIntRegister(GPIO_PORTB_BASE,I2C0EventDetectInterrupt);
+    GPIOIntTypeSet(GPIO_PORTB_BASE, GPIO_PIN_3, GPIO_FALLING_EDGE);
+    GPIOIntEnable(GPIO_PORTB_BASE,GPIO_PIN_3);
 
     // Test that sensor is set up correctly
     UARTprintf("\nTesting OPT3001 Sensor:\n");
@@ -238,32 +235,14 @@ int main(void)
 
     UARTprintf("All Tests Passed!\n\n");
 
-    // Initialize opt3001 sensor
+    // Initialize the Opt3001 sensor
     sensorOpt3001Init();
     sensorOpt3001Enable(true);
 
     // Loop Forever
     while(1)
     {
-
         SysCtlDelay(g_ui32SysClock/100);
-        I2C0EventDetectInterrupt();
-
-
-//        SysCtlDelay(g_ui32SysClock/100);
-//
-//        //Read and convert OPT values
-//        success = sensorOpt3001Read(&rawData);
-//
-//        if (success) {
-//            sensorOpt3001Convert(rawData, &convertedLux);
-//
-//            // Construct Text
-//            sprintf(tempStr, "Lux: %5.2f\n", convertedLux);
-//            UARTprintf("%s\n", tempStr);
-//
-//
-//        }
 
     }
 }
