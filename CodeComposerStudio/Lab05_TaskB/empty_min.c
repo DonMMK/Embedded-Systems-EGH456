@@ -1,44 +1,11 @@
-/*
- * Copyright (c) 2015, Texas Instruments Incorporated
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- *  ======== empty_min.c ========
- */
-/* XDC module Headers */
+//LAB 3 TASK C SKELETON FILE
+//This file is not complete and requires modification to get Task C to work
+//This file will not compile in its current form
+//You also need to have some correct modules included in the TI-RTOS .cfg file
 
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <string.h>
 
 /* XDCtools Header files */
 #include <xdc/std.h>
@@ -52,15 +19,9 @@
 #include <ti/sysbios/hal/Hwi.h>
 #include <ti/sysbios/gates/GateHwi.h>
 #include <ti/sysbios/gates/GateSwi.h>
-#include <xdc/std.h>
-#include <xdc/runtime/Memory.h>
-#include <xdc/runtime/System.h>
-#include <xdc/runtime/Error.h>
-#include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/knl/Semaphore.h>
-#include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Event.h>
 #include <ti/sysbios/knl/Queue.h>
-
+#include <ti/sysbios/knl/Semaphore.h>
 #include <xdc/runtime/Error.h>
 
 /* TI-RTOS Header files */
@@ -73,245 +34,128 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
-//#include "inc/tm4c129xnczad.h"
 
-
-
+/* Example/Board Header files */
+#include "Board.h"
 #include "grlib/grlib.h"
-
 #include "drivers/frame.h"
 #include "drivers/Kentec320x240x16_ssd2119_spi.h"
 #include "drivers/pinout.h"
 
+#define TASKSTACKSIZE 768
+#define NUMMSGS 50
+#define TIMEOUT 20
 
-#include <xdc/std.h>
-#include <xdc/runtime/System.h>
+void displayFxn(UArg arg0, UArg arg1);
+void UARTFxn(UART_Handle handle, void *rxBuf, size_t size, int id);
+void openUART();
+void displayFxn(UArg arg0, UArg arg1);
 
-/* BIOS module Headers */
-#include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/knl/Clock.h>
-#include <ti/sysbios/knl/Task.h>
-#include <ti/sysbios/knl/Event.h>
-#include <ti/sysbios/knl/Semaphore.h>
-#include <ti/sysbios/knl/Mailbox.h>
+typedef struct MsgObj {
+    Queue_Elem elem;    /* first field for Queue */
+    int id;             /* writer task id */
+    Char data;          /* message value */
+} MsgObj, *Msg;
 
-#include <xdc/cfg/global.h>
+Task_Struct task1Struct;
+Char task1Stack[TASKSTACKSIZE];
 
-/* Example/Board Header files */
-#include "Board.h"
-#include <ti/sysbios/knl/Queue.h>
+ti_sysbios_gates_GateHwi_Handle gateHwi;
+ti_sysbios_gates_GateHwi_Params gHwiprms;
 
-
-
-
-#define NUMMSGS 3 /* number of messages */
-#define NUMWRITERS 3 /* number of writer tasks created with */
-#define TIMEOUT         12      /* Timeout value */
-
-Queue_Handle q;
-
-#define TASKSTACKSIZE   5000
-
-Void clk0Fxn(UArg arg0);
-Void clk1Fxn(UArg arg0);
-Void displayFxn(UArg arg0, UArg arg1);
-Void writertask(UArg arg0, UArg arg1);
-
+Hwi_Handle UartHwiHandle;
 
 char rxBuf[8];
 char shared_buffer[64];
 char shared_buffer_LCD[64];
 int idx = 0;
-int idx_lcd = 0;
-bool should_print = false;
-bool should_echo = false;
+int idx_2 = 0;
+int count = 0;
+
+//Semaphore
+Semaphore_Struct semStruct0;
+Semaphore_Struct semStruct1;
+Semaphore_Handle semHandle;
+
+//Event
+Event_Struct evtStruct;
+Event_Handle evtHandle;
 
 GateHwi_Handle gateHwi;
 GateHwi_Params gHwiprms;
 
-
-//Swi_Handle SwiHandle;
 Hwi_Handle UartHwiHandle;
 
 UART_Handle uart;
 UART_Params uartParams;
 
-Task_Struct task0Struct, task1Struct;
-Char task0Stack[TASKSTACKSIZE], task1Stack[TASKSTACKSIZE];
-Semaphore_Struct sem0Struct, sem1Struct;
-Semaphore_Handle semHandle;
-int count = 0;
+Queue_Handle my_queue;
+Queue_Handle my_queue_lcd;
+MsgObj msg_mem[NUMMSGS];
 
-
-
-typedef struct Rec {
-    Queue_Elem _elem;
-    char data;
-    int output;
-} Rec;
-
-
-
-
-Void heartBeatFxn(UArg arg0, UArg arg1)
-{
-    //This is from the heart beat meaning this is activated when we click r ir space
-    while (1) {
-        System_flush();
-
-        Task_sleep((unsigned int)5);
-
-
-        if(!(UART_read(uart, rxBuf, 1))){
-            count++;
-        }
-        System_flush();
-
-    }
-}
-
-/*
- *  ======== main ========
- */
-
-Rec input[200];
-void UARTFxn(UART_Handle handle, void *rxBuf, size_t size){
-
+void UARTFxn(UART_Handle handle, void *rxBuf, size_t size, int id){
+    UInt gateKey;
+    MsgObj *msg;
     char c;
 
-    Int i;
-
-
+    //uint32_t intStatus;
     System_printf("Received read buffer \n");
 
-    //    Rec * value = ( *) malloc(sizeof(person));
+    size_t x = 0;
+    for(x = 0; x < size; x++){
 
-    //    System_printf("value %d \n",count);
-
-    size_t m = 0;
-    for(m = 0; m < size; m++){
-        c = ((uint8_t*)rxBuf)[i];
-        //        gateKey = GateHwi_enter(gateHwi);
-
+        c = ((uint8_t*)rxBuf)[x];
+        gateKey = GateHwi_enter(gateHwi);
+        msg = Queue_get(my_queue_lcd);
+        msg->data = c;
+        count++;
+        Queue_put(my_queue, &msg->elem);
 
         if (c == ' '){
-            input[count].data = 's';
-            Queue_enqueue(q, &input[count]._elem);
-            Semaphore_post(semHandle);
-            count = 0;
-            System_flush();
-
+            System_printf("Received a space character echoing buffer \n");
+            Event_post(evtHandle, Event_Id_01);
 
         }else if (c == '\r'){
-            input[count].data = 'e';
-            Queue_enqueue(q, &input[count]._elem);
-            Semaphore_post(semHandle);
-            count = 0;
-            System_flush();
-        }else{
-            input[count].data = c;
-            Queue_enqueue(q, &input[count]._elem);
+            Event_post(evtHandle, Event_Id_00);
         }
-
-
+        Semaphore_post(semHandle);
+        GateHwi_leave(gateHwi, gateKey);
     }
 
 }
-
 
 void openUART(){
 
-    /* Create a UART with data processing off. */
-    UART_Params_init(&uartParams);
+     /* Create a UART with data processing off. */
+     UART_Params_init(&uartParams);
+     uartParams.readMode = UART_MODE_CALLBACK;
+     uartParams.readCallback = UARTFxn;
+     uartParams.writeDataMode = UART_DATA_BINARY;
+     uartParams.readDataMode = UART_DATA_BINARY;
+     uartParams.readReturnMode = UART_RETURN_FULL;
+     uartParams.readEcho = UART_ECHO_OFF;
+     uartParams.baudRate = 115200;
+     uart = UART_open(Board_UART0, &uartParams);
 
-
-    uartParams.readMode = UART_MODE_CALLBACK;
-    uartParams.readCallback = UARTFxn;
-    uartParams.writeDataMode = UART_DATA_BINARY;
-    uartParams.readDataMode = UART_DATA_BINARY;
-    uartParams.readReturnMode = UART_RETURN_FULL;
-    uartParams.readEcho = UART_ECHO_OFF;
-    uartParams.baudRate = 115200;
-    uart = UART_open(Board_UART0, &uartParams);
-
-    if (uart == NULL) {
-        System_abort("Error opening the UART");
-    }
+     if (uart == NULL) {
+         System_abort("Error opening the UART");
+     }
 }
 
 
-
-Int main()
+void displayFxn(UArg arg0, UArg arg1)
 {
-
-    Board_initGeneral();
-    Board_initGPIO();
-    Board_initUART();
-
-    q = Queue_create(NULL, NULL);
-
-
-    /* Construct BIOS Objects */
-    Task_Params taskParams;
-    Semaphore_Params semParams;
-
-    //
-    /* Call board init functions */
-
-    /* Construct writer/reader Task threads */
-    Task_Params_init(&taskParams);
-    //    taskParams.arg0 = (UArg)mbxHandle;
-    taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.priority = 1;
-
-
-    taskParams.stack = &task0Stack;
-    Task_construct(&task0Struct, (Task_FuncPtr)displayFxn, &taskParams, NULL);
-
-    /* Construct heartBeat Task  thread */
-    Task_Params_init(&taskParams);
-    taskParams.arg0 = 1000;
-    Task_create((Task_FuncPtr)heartBeatFxn, &taskParams, NULL);
-
-
-    Semaphore_Params_init(&semParams);
-    semParams.mode = Semaphore_Mode_BINARY;
-    Semaphore_construct(&sem0Struct, 0, &semParams);
-
-    semHandle = Semaphore_handle(&sem0Struct);
-
-
-    openUART();
-    BIOS_start();    /* Does not return */
-    return(0);
-}
-
-
-
-/*
- *  ======== reader ========
- */
-//Void displayFxn(UArg arg0, UArg arg1)
-//{
-//
-//
-//}
-
-/*
- *  ======== writer ========
- */
-Void displayFxn(UArg arg0, UArg arg1)
-{
-
+    UInt gateKey;
     tContext sContext;
     const tRectangle fill = {.i16XMin = 0, .i16XMax = 320, .i16YMin = 0, .i16YMax = 240 };
 
+    Msg msg;
+    UInt posted;
     Types_FreqHz cpuFreq;
     BIOS_getCpuFreq(&cpuFreq);
 
     //Add init functions for LCD and touch screen
     Kentec320x240x16_SSD2119Init((uint32_t)cpuFreq.lo);
-
     GrContextInit(&sContext, &g_sKentec320x240x16_SSD2119);
     GrContextForegroundSet(&sContext, ClrWhite);
     GrContextFontSet(&sContext, &g_sFontCm20);
@@ -323,63 +167,118 @@ Void displayFxn(UArg arg0, UArg arg1)
     //Print to terminal some user prompt
     UART_write(uart, (uint8_t *)"\fEnter text: ", 12);
 
-    //    while(1) {
-    System_printf("where is read used\n");
+    while(1) {
 
+        UART_read(uart, rxBuf, 1);
+        posted = Event_pend(evtHandle,Event_Id_NONE,Event_Id_00 + Event_Id_01,TIMEOUT);
+        gateKey = GateHwi_enter(gateHwi);
 
-
-    while(1)
-    {
-
-
-        if(Semaphore_pend(semHandle, BIOS_WAIT_FOREVER))
+        if (posted)
         {
 
-            Rec* rp;
-            char buff[200];
-            int i = 0;
-            int m = 0;
-            char num;
+            Semaphore_pend(semHandle, BIOS_WAIT_FOREVER);
+            int x;
+            for(x=0; x < count; x++){
 
-            while (!Queue_empty(q))
-            {
-                rp = Queue_dequeue(q);
-                buff[i] = rp->data;
-
-                //System_printf("%c", rp->data);
-                i++;
+                msg = Queue_get(my_queue);
+                shared_buffer[idx++] = msg->data;
+                shared_buffer_LCD[idx_2++] = msg->data;
+                Queue_put(my_queue_lcd, &msg-> elem);
             }
 
-            num = buff[i-1];
-
-            if(num == 'e')
-            {
-                GrRectFill(&sContext, &fill);
-                int n;
-                for(n = 0; n<i;n++)
-                {
-                    System_printf("%c", buff[n]);
-
-
-                    GrStringDraw(&sContext, &buff[n], i-1, 40, 40, 1);
-                    //                should_print = false;
-                    //                idx_lcd = 0;
-                    i = 0;
-
-                }
-            }
-            else if(num == 's')
-            {
-                    System_printf("Received a space character echoing to terminal \n");
-
-                    UART_write(uart, &buff, i-1);
-
+            if(posted & Event_Id_00){
+            System_printf("Received a carriage return character printing to screen \n");
+            GrRectFill(&sContext, &fill);
+            System_printf("Drawing a string to the screen\n");
+            GrStringDraw(&sContext, &shared_buffer_LCD, idx_2-1, 40, 40, 1);
+            idx_2 = 0;
+            count = 0;
             }
 
+            else if(posted & Event_Id_01){
+            System_printf("Received a space character echoing to terminal \n");
+            UART_write(uart, &shared_buffer, idx);
+            idx = 0;
+            count = 0;
+            }
         }
-    }
+        GateHwi_leave(gateHwi, gateKey);
 
+        //Use this to print debug info to console while task is running
+        System_flush();
+
+    }
 }
 
+/*
+ *  ======== main ========
+ */
+
+int main(void){
+
+    /* Call board init functions */
+    Board_initGeneral();
+    Board_initGPIO();
+
+    //This can be used for either Peripheral driver or TI-RTOS driver
+    //Primarily this setups UART pins and we can reuse that
+    //This will also create a TI-RTOS uart via the config structs but
+    //usually doesn't conflict if we setup a Hwi directly
+    Board_initUART();
+
+    /* Construct BIOS objects */
+    Task_Params taskParams;
+    Task_Params_init(&taskParams);
+    taskParams.stackSize = TASKSTACKSIZE;
+    taskParams.stack = &task1Stack;
+    taskParams.instance->name = "display";
+    Task_construct(&task1Struct, (Task_FuncPtr)displayFxn, &taskParams, NULL);
+
+    Event_construct(&evtStruct, NULL);
+    evtHandle = Event_handle(&evtStruct);
+
+    //Semaphore setup
+    Semaphore_Params semParams;
+    Semaphore_Params_init(&semParams);
+    semParams.mode = Semaphore_Mode_BINARY;
+    semParams.event = evtHandle;
+    semParams.eventId = Event_Id_02;
+    Semaphore_construct(&semStruct0, 0, &semParams);
+    semHandle = Semaphore_handle(&semStruct0);
+
+    int i;
+    MsgObj *msg = &msg_mem;
+    my_queue = Queue_create(NULL, NULL);
+    my_queue_lcd = Queue_create(NULL, NULL);
+
+    for (i = 0; i < NUMMSGS; msg++, i++) {
+        Queue_put(my_queue_lcd, &msg->elem);
+    }
+
+    GateHwi_Params_init(&gHwiprms);
+    gateHwi = GateHwi_create(&gHwiprms, NULL);
+
+    if (gateHwi == NULL) {
+        System_abort("Gate Hwi create failed");
+    }
+
+    //Call function to initialise UART
+    openUART();
+
+    /* This example has logging and many other debug capabilities enabled */
+    System_printf("This example does not attempt to minimize code or data "
+                  "footprint\n");
+
+    System_printf("Starting the UART Echo example\nSystem provider is set to "
+                  "SysMin. Halt the target to view any SysMin contents in "
+                  "ROV.\n");
+
+    /* SysMin will only print to the console when you call flush or exit */
+    System_flush();
+
+    /* Start BIOS */
+    BIOS_start();
 
 
+    return (0);
+}
