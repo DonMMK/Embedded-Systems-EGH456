@@ -47,6 +47,8 @@
 // Increase the stacksize if needed
 #define TASKSTACKSIZE   1024
 
+#define NUM_PANELS              (sizeof(g_psPanels) / sizeof(g_psPanels[0]))
+
 // Task
 Task_Struct task1Struct;
 Char task1Stack[TASKSTACKSIZE];
@@ -59,27 +61,7 @@ Swi_Handle SwiHandle;
 Hwi_Handle UartHwiHandle;
 
 
-// Variables and Buffers for drawing the shapes
-uint32_t LineDrawingInitialX[32]; // Use larger buffers if neccessary
-uint32_t LineDrawingInitialY[32]; // Use larger buffers if neccessary
 
-uint32_t NumOfLines; // To count the number of lines that are being drawn.
-
-uint32_t XCoordLineFinish[32];
-uint32_t YCoordLineFinish[32];
-
-uint32_t XPreviousValue;
-uint32_t YPreviousValue;
-
-uint32_t XCoordinateCursor; // For the cursor positions
-uint32_t YCoordinateCursor; // For the cursor positions
-
-// For the display
-uint32_t LimitForLowerX; // Boundary Criteria for the display - Lower X
-uint32_t LimitForLowerY; // Boundary Criteria for the display - Lower Y
-
-uint32_t LimitForUpperX; // Boundary Criteria for the display - High X
-uint32_t LimitForUpperY; // Boundary Criteria for the display - High Y
 
 char InputChar; // Input for the Hwi and Swi
 bool updateScreen;
@@ -105,21 +87,6 @@ void UARTFxn(){
     gateKey = GateHwi_enter(gateHwi);
 
 
-    // Change the cursor position when character pressed
-    // The character is taken in through the UART Console
-    if (c == 'w' && YCoordinateCursor > LimitForLowerY) {           // Limit for upper y is 30
-        YCoordinateCursor-=5;
-    } else if (c == 'a' && XCoordinateCursor > LimitForLowerX) {
-        XCoordinateCursor-=5;
-    } else if (c == 's' && YCoordinateCursor < LimitForUpperY) {
-        YCoordinateCursor+=5;
-    } else if (c == 'd' && XCoordinateCursor < LimitForUpperX) {
-        XCoordinateCursor+=5;
-    } else if (c == '\r' || c == '\x7f'){ // trigger swi if return or backspace pressed
-        InputChar = c;
-        Swi_inc(SwiHandle);
-    }
-
     // Change the flag to update the cursor
     updateScreen = true;
 
@@ -139,50 +106,7 @@ void SwiFxn(){
     gateKey = GateHwi_enter(gateHwi);
 
 
-    // update line buffer when the carriage return is pressed - change accordingly on mac
-    if (InputChar == '\r'){
 
-        // Dont draw anything the first time
-        if (XPreviousValue == 0 && YPreviousValue == 0){
-
-            XPreviousValue = XCoordinateCursor;
-            YPreviousValue = YCoordinateCursor;
-
-        } else {
-
-            // if lines are drawn too many times reset the buffer
-            if (NumOfLines == 32)
-            {
-                NumOfLines = 0;
-            }
-
-            // Initial position of the line drawn
-            LineDrawingInitialX[NumOfLines] = XPreviousValue;
-            LineDrawingInitialY[NumOfLines] = YPreviousValue;
-
-            // Final position of the line drawn
-            XCoordLineFinish[NumOfLines] = XCoordinateCursor;
-            YCoordLineFinish[NumOfLines] = YCoordinateCursor;
-
-            NumOfLines = NumOfLines + 1; // Increase the line count
-
-            // Assign the current location to previous for next line drawing
-            XPreviousValue = XCoordinateCursor;
-            YPreviousValue = YCoordinateCursor;
-
-
-        }
-
-    } else if (InputChar == '\x7f') { // mac key for backspace - vs delete
-
-        // Reset the buffer array
-        memset(LineDrawingInitialX, 0, 32);
-        memset(LineDrawingInitialY, 0, 32);
-
-        // Reset line count to zero
-        NumOfLines = 0;
-
-    }
 
     GateHwi_leave(gateHwi, gateKey);
 
@@ -254,7 +178,7 @@ void displayFxn(UArg arg0, UArg arg1)
     System_flush();
 
     // Draws a frame - Change to Rect fill method in Lab 02 if needed
-    FrameDraw(&sContext, "Don Lab 03");
+    FrameDraw(&sContext, "Motor Control");
 
 
     // for clearing screen
@@ -263,23 +187,7 @@ void displayFxn(UArg arg0, UArg arg1)
     sRect.i16XMax = GrContextDpyWidthGet(&sContext) - 1;
     sRect.i16YMax = GrContextDpyHeightGet(&sContext) - 1;
 
-    // set cursor to be in display center
-    XCoordinateCursor = GrContextDpyWidthGet(&sContext) / 2;
-    YCoordinateCursor = GrContextDpyHeightGet(&sContext) / 2;
 
-
-    // set previous location to 0 (default, wont draw from this point)
-    XPreviousValue = 0;
-    YPreviousValue = 0;
-
-    // display boundaries for cursor movement
-    LimitForUpperX = GrContextDpyWidthGet(&sContext) - 10;
-    LimitForUpperY = GrContextDpyHeightGet(&sContext) - 10;
-    LimitForLowerX = 10;
-    LimitForLowerY = 30;
-
-    // lines drawn
-    NumOfLines = 0;
 
     updateScreen = true;
 
@@ -298,16 +206,7 @@ void displayFxn(UArg arg0, UArg arg1)
             GrFlush(&sContext);
 
 
-            // draw cursor
-            GrContextForegroundSet(&sContext, ClrWhite);
-            GrStringDrawCentered(&sContext, "X", -1, XCoordinateCursor, YCoordinateCursor, 0);
 
-
-            // draw lines from buffers
-            int i;
-            for (i = 0; i < NumOfLines; i++){
-                GrLineDraw(&sContext, LineDrawingInitialX[i], LineDrawingInitialY[i], XCoordLineFinish[i], YCoordLineFinish[i]);
-            }
 
             updateScreen = false;
 
