@@ -2,7 +2,7 @@
 
 ### Task A
 Queston: What is the time taken by task1 within its critical section each time it runs? (Try 3
-passes).
+passes).  
 Answer: 844 ticks, 23,23 afterwards
 
 Queston: Are these approximately the same? If not, why not? (Observe the sequence of messages).  
