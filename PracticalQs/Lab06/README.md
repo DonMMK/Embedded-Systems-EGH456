@@ -27,23 +27,32 @@ Answer: Task 1 would be at risk. This would be due to the priority inversion.
 ### Task B
 Queston: Does the time taken by task1 depend on the computation time for task3? Why? (note
 this and refer to priority inversion problem description in lecture 10).  
-Answer:
+Answer: Yes, because the Task 2 holds onto resource that Task 1 needs to continue execution. Task 3 preempts execution over Task 2 where Task 3 has to finish first for the rest of the Tasks to finish execution
 
 Queston: Where is the extra time being spent by task1? Doing what? (refer to priority inversion
 problem description in lecture 10).  
-Answer:
+Answer: Waiting for resource held by task 2 to release via semaphore post.  
 
 Queston: What is a solution to the priority inversion problem? (refer to priority inheritance
 protocol description in lecture 10).  
-Answer:
+Answer: The solutions available are Priority Inheritance Protocol, Priority Ceiling Protocol and Random Boosting.
+For the purposes of this question - the solution explored is Priority Inheritance Protocol.  
+- Priorities of tasks are dynamically changed.  
+- A task in a critical section inherits the priority of the highest task pending on that critical region.  
+- Priority inheritance does not prevent deadlock.  
 
 Queston: What are the different types of ‘gates’ in SYS/BIOS? (refer to the user manual for
 SYS/BIOS).  
-Answer:
+Answer: As per the user manual the different gates are,  
+1. gateHWI  
+2. gateSWI  
+3. gateTask  
+4. gateMutex  
+5. GateMutexPri  
 
 Queston: Which gate supports a solution to this problem? (read about Gates in the SYS/BIOS
 manual).  
-Answer:
+Answer: The GateMutexPri
 
 Queston:Was the time more with the semaphore than with the GateMutexPri? Why?  
 Answer:
