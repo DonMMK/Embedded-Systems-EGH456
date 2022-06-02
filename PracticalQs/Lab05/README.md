@@ -5,6 +5,8 @@ Question: What is an “event”? What are the events in this example that the r
 task waits
 for?  
 Answer: They are data structures that you can pass around your system, that indicate something has happened or some state has changed in for system Like a button press or character received at a serial port. The reader task is waiting for Event00 AND Event01 or Event02.  
+An event is a form of system interrupt. In this example the reader pends on the event_id_02 OR (event_id_00 AND event_id_01).  
+- event 02 is posted by the mailbox everytime the writer task posts a message to the mailbox
 
 
 Question: What is “implicit” or “explicit” posting of events in the context of this 
@@ -33,7 +35,7 @@ Question: When is the timeout period set to zero (BIOS NO WAIT) and why?
 Answer:
 
 ### Task B
-- 
-
+Question: Do this using multiple threads in TI-RTOS. Explain your use of message queues and/or
+semaphores.  
+Answer:  
 ### Task C
-- 
