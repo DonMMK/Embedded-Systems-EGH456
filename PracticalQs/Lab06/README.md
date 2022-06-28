@@ -66,3 +66,4 @@ Answer:
 Queston: Why does task3 not pre-empt task2 when GateMutexPri is used as it did when a
 semaphore was used?  
 Answer:
+ 
